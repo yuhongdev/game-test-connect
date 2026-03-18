@@ -1,0 +1,161 @@
+
+========================================================================
+  Session started: 2026-03-16 13:39:24
+  CSV: D:\Yoong testing\stress-test\stress_test_users.csv  (1,000,000 users)
+========================================================================
+
+========================================================================
+  Session started: 2026-03-16 13:40:46
+  CSV: D:\Yoong testing\stress-test\stress_test_users.csv  (1,000,000 users)
+========================================================================
+[2026-03-16 13:42:43] Batch #   1 | users       1-   1000 | ok=    0 dup=    0 fail= 1000 |     8.4 req/s | elapsed=119.2s
+[2026-03-16 13:42:44] Batch #   2 | users    1001-   2000 | ok=    0 dup=    0 fail= 1000 |   780.5 req/s | elapsed=1.3s
+[2026-03-16 13:42:45] Batch #   3 | users    2001-   3000 | ok=    0 dup=    0 fail= 1000 |  2406.2 req/s | elapsed=0.4s
+[2026-03-16 13:42:46] Batch #   4 | users    3001-   4000 | ok=    0 dup=    0 fail= 1000 |  1205.9 req/s | elapsed=0.8s
+[2026-03-16 13:42:47] Batch #   5 | users    4001-   5000 | ok=    0 dup=    0 fail= 1000 |  1240.8 req/s | elapsed=0.8s
+[2026-03-16 13:42:47] Batch #   6 | users    5001-   6000 | ok=    0 dup=    0 fail= 1000 |  1160.5 req/s | elapsed=0.9s
+[2026-03-16 13:42:48] Batch #   7 | users    6001-   7000 | ok=    0 dup=    0 fail= 1000 |  1515.3 req/s | elapsed=0.7s
+[2026-03-16 13:42:49] Batch #   8 | users    7001-   8000 | ok=    0 dup=    0 fail= 1000 |  1528.6 req/s | elapsed=0.7s
+[2026-03-16 13:42:49] Batch #   9 | users    8001-   9000 | ok=    0 dup=    0 fail= 1000 |  1530.7 req/s | elapsed=0.7s
+[2026-03-16 13:42:51] Batch #  10 | users    9001-  10000 | ok=    0 dup=    0 fail= 1000 |   650.5 req/s | elapsed=1.5s
+[2026-03-16 13:42:53] Batch #  11 | users   10001-  11000 | ok=    0 dup=    0 fail= 1000 |   577.6 req/s | elapsed=1.7s
+[2026-03-16 13:42:54] Batch #  12 | users   11001-  12000 | ok=    0 dup=    0 fail= 1000 |   576.7 req/s | elapsed=1.7s
+[2026-03-16 13:42:56] Batch #  13 | users   12001-  13000 | ok=    0 dup=    0 fail= 1000 |   560.6 req/s | elapsed=1.8s
+[2026-03-16 13:42:58] Batch #  14 | users   13001-  14000 | ok=    0 dup=    0 fail= 1000 |   567.5 req/s | elapsed=1.8s
+[2026-03-16 13:43:00] Batch #  15 | users   14001-  15000 | ok=    0 dup=    0 fail= 1000 |   581.8 req/s | elapsed=1.7s
+[2026-03-16 13:43:01] Batch #  16 | users   15001-  16000 | ok=    0 dup=    0 fail= 1000 |   564.7 req/s | elapsed=1.8s
+[2026-03-16 13:43:03] Batch #  17 | users   16001-  17000 | ok=    0 dup=    0 fail= 1000 |   582.6 req/s | elapsed=1.7s
+[2026-03-16 13:43:05] Batch #  18 | users   17001-  18000 | ok=    0 dup=    0 fail= 1000 |   564.1 req/s | elapsed=1.8s
+[2026-03-16 13:43:07] Batch #  19 | users   18001-  19000 | ok=    0 dup=    0 fail= 1000 |   534.5 req/s | elapsed=1.9s
+[2026-03-16 13:43:09] Batch #  20 | users   19001-  20000 | ok=    0 dup=    0 fail= 1000 |   569.1 req/s | elapsed=1.8s
+[2026-03-16 13:43:10] Batch #  21 | users   20001-  21000 | ok=    0 dup=    0 fail= 1000 |   564.2 req/s | elapsed=1.8s
+[2026-03-16 13:43:12] Batch #  22 | users   21001-  22000 | ok=    0 dup=    0 fail= 1000 |   562.1 req/s | elapsed=1.8s
+[2026-03-16 13:43:14] Batch #  23 | users   22001-  23000 | ok=    0 dup=    0 fail= 1000 |   581.8 req/s | elapsed=1.7s
+[2026-03-16 13:43:16] Batch #  24 | users   23001-  24000 | ok=    0 dup=    0 fail= 1000 |   509.1 req/s | elapsed=2.0s
+[2026-03-16 13:43:18] Batch #  25 | users   24001-  25000 | ok=    0 dup=    0 fail= 1000 |   567.8 req/s | elapsed=1.8s
+[2026-03-16 13:43:19] Batch #  26 | users   25001-  26000 | ok=    0 dup=    0 fail= 1000 |   565.3 req/s | elapsed=1.8s
+[2026-03-16 13:43:21] Batch #  27 | users   26001-  27000 | ok=    0 dup=    0 fail= 1000 |   564.5 req/s | elapsed=1.8s
+[2026-03-16 13:43:23] Batch #  28 | users   27001-  28000 | ok=    0 dup=    0 fail= 1000 |   575.9 req/s | elapsed=1.7s
+[2026-03-16 13:43:25] Batch #  29 | users   28001-  29000 | ok=    0 dup=    0 fail= 1000 |   558.3 req/s | elapsed=1.8s
+[2026-03-16 13:43:26] Batch #  30 | users   29001-  30000 | ok=    0 dup=    0 fail= 1000 |   570.3 req/s | elapsed=1.8s
+[2026-03-16 13:43:29] Batch #  31 | users   30001-  31000 | ok=    0 dup=    0 fail= 1000 |   367.7 req/s | elapsed=2.7s
+[2026-03-16 13:43:31] Batch #  32 | users   31001-  32000 | ok=    0 dup=    0 fail= 1000 |   638.1 req/s | elapsed=1.6s
+[2026-03-16 13:43:34] Batch #  33 | users   32001-  33000 | ok=    0 dup=    0 fail= 1000 |   341.9 req/s | elapsed=2.9s
+[2026-03-16 13:51:57] Batch #  34 (partial) | users   33001-  33606 | ok=    0 dup=    0 fail=  606 |     1.2 req/s | elapsed=503.6s
+  Session ended: 2026-03-16 13:51:57
+========================================================================
+
+========================================================================
+  Session started: 2026-03-16 13:53:08
+  CSV: D:\Yoong testing\stress-test\stress_test_users.csv  (1,000,000 users)
+========================================================================
+[2026-03-16 13:54:20] Batch #   1 | users       1-   1000 | ok= 1000 dup=    0 fail=    0 |    13.4 req/s | elapsed=74.4s
+[2026-03-16 13:55:15] Batch #   2 | users    1001-   2000 | ok= 1000 dup=    0 fail=    0 |    18.0 req/s | elapsed=55.4s
+[2026-03-16 13:56:10] Batch #   3 | users    2001-   3000 | ok= 1000 dup=    0 fail=    0 |    18.3 req/s | elapsed=54.7s
+[2026-03-16 13:57:06] Batch #   4 | users    3001-   4000 | ok= 1000 dup=    0 fail=    0 |    17.9 req/s | elapsed=55.8s
+[2026-03-16 13:58:02] Batch #   5 | users    4001-   5000 | ok= 1000 dup=    0 fail=    0 |    17.6 req/s | elapsed=56.9s
+[2026-03-16 13:59:02] Batch #   6 | users    5001-   6000 | ok=  999 dup=    0 fail=    1 |    16.9 req/s | elapsed=59.1s
+
+========================================================================
+  Session started: 2026-03-16 14:07:28
+  CSV: D:\Yoong testing\stress-test\stress_test_users.csv  (1,000,000 users)
+========================================================================
+[2026-03-16 14:12:41] Batch #   1 | users       1-   1000 | ok=    0 dup= 1000 fail=    0 |     3.2 req/s | elapsed=316.1s
+[2026-03-16 14:12:46] Batch #   2 | users    1001-   2000 | ok=    0 dup= 1000 fail=    0 |   242.3 req/s | elapsed=4.1s
+[2026-03-16 14:12:49] Batch #   3 | users    2001-   3000 | ok=    0 dup= 1000 fail=    0 |   292.6 req/s | elapsed=3.4s
+[2026-03-16 14:12:53] Batch #   4 | users    3001-   4000 | ok=    0 dup= 1000 fail=    0 |   241.0 req/s | elapsed=4.1s
+[2026-03-16 14:12:58] Batch #   5 | users    4001-   5000 | ok=    0 dup=  851 fail=  149 |   194.2 req/s | elapsed=5.2s
+[2026-03-16 14:13:02] Batch #   6 | users    5001-   6000 | ok=    1 dup=  887 fail=  112 |   248.0 req/s | elapsed=4.0s
+[2026-03-16 14:13:08] Batch #   7 | users    6001-   7000 | ok=   51 dup=  749 fail=  200 |   161.1 req/s | elapsed=6.2s
+[2026-03-16 14:13:17] Batch #   8 | users    7001-   8000 | ok=  277 dup=    7 fail=  716 |   123.9 req/s | elapsed=8.1s
+[2026-03-16 14:13:25] Batch #   9 | users    8001-   9000 | ok=  319 dup=    0 fail=  681 |   120.2 req/s | elapsed=8.3s
+[2026-03-16 14:13:33] Batch #  10 | users    9001-  10000 | ok=  358 dup=    0 fail=  642 |   120.2 req/s | elapsed=8.3s
+[2026-03-16 14:13:38] Batch #  11 | users   10001-  11000 | ok=  192 dup=    0 fail=  808 |   216.8 req/s | elapsed=4.6s
+[2026-03-16 14:13:40] Batch #  12 | users   11001-  12000 | ok=   99 dup=    0 fail=  901 |   415.0 req/s | elapsed=2.4s
+[2026-03-16 14:13:42] Batch #  13 | users   12001-  13000 | ok=   98 dup=    0 fail=  902 |   495.6 req/s | elapsed=2.0s
+[2026-03-16 14:13:44] Batch #  14 | users   13001-  14000 | ok=   83 dup=    0 fail=  917 |   524.4 req/s | elapsed=1.9s
+[2026-03-16 14:13:46] Batch #  15 | users   14001-  15000 | ok=   54 dup=    0 fail=  946 |   669.2 req/s | elapsed=1.5s
+[2026-03-16 14:13:47] Batch #  16 | users   15001-  16000 | ok=   75 dup=    0 fail=  925 |   631.0 req/s | elapsed=1.6s
+[2026-03-16 14:13:49] Batch #  17 | users   16001-  17000 | ok=   71 dup=    0 fail=  929 |   629.6 req/s | elapsed=1.6s
+[2026-03-16 14:13:50] Batch #  18 | users   17001-  18000 | ok=   64 dup=    0 fail=  936 |   611.5 req/s | elapsed=1.6s
+[2026-03-16 14:13:52] Batch #  19 | users   18001-  19000 | ok=   89 dup=    0 fail=  911 |   611.4 req/s | elapsed=1.6s
+[2026-03-16 14:13:54] Batch #  20 | users   19001-  20000 | ok=   78 dup=    0 fail=  922 |   636.5 req/s | elapsed=1.6s
+[2026-03-16 14:13:55] Batch #  21 | users   20001-  21000 | ok=   51 dup=    0 fail=  949 |   619.7 req/s | elapsed=1.6s
+[2026-03-16 14:13:57] Batch #  22 | users   21001-  22000 | ok=   68 dup=    0 fail=  932 |   609.4 req/s | elapsed=1.6s
+[2026-03-16 14:13:59] Batch #  23 | users   22001-  23000 | ok=   95 dup=    0 fail=  905 |   605.3 req/s | elapsed=1.7s
+[2026-03-16 14:14:00] Batch #  24 | users   23001-  24000 | ok=   58 dup=    0 fail=  942 |   635.4 req/s | elapsed=1.6s
+[2026-03-16 14:14:02] Batch #  25 | users   24001-  25000 | ok=   74 dup=    0 fail=  926 |   613.3 req/s | elapsed=1.6s
+[2026-03-16 14:14:03] Batch #  26 | users   25001-  26000 | ok=   80 dup=    0 fail=  920 |   608.9 req/s | elapsed=1.6s
+[2026-03-16 14:14:05] Batch #  27 | users   26001-  27000 | ok=   56 dup=    0 fail=  944 |   618.1 req/s | elapsed=1.6s
+[2026-03-16 14:14:07] Batch #  28 | users   27001-  28000 | ok=   66 dup=    0 fail=  934 |   630.9 req/s | elapsed=1.6s
+[2026-03-16 14:14:08] Batch #  29 | users   28001-  29000 | ok=   95 dup=    0 fail=  905 |   628.6 req/s | elapsed=1.6s
+[2026-03-16 14:14:10] Batch #  30 | users   29001-  30000 | ok=   42 dup=    0 fail=  958 |   618.9 req/s | elapsed=1.6s
+[2026-03-16 14:14:11] Batch #  31 | users   30001-  31000 | ok=   73 dup=    0 fail=  927 |   629.1 req/s | elapsed=1.6s
+[2026-03-16 14:14:13] Batch #  32 | users   31001-  32000 | ok=   92 dup=    0 fail=  908 |   603.3 req/s | elapsed=1.7s
+[2026-03-16 14:14:15] Batch #  33 | users   32001-  33000 | ok=   59 dup=    0 fail=  941 |   620.2 req/s | elapsed=1.6s
+[2026-03-16 14:14:16] Batch #  34 | users   33001-  34000 | ok=   73 dup=    0 fail=  927 |   624.6 req/s | elapsed=1.6s
+[2026-03-16 14:14:18] Batch #  35 | users   34001-  35000 | ok=   63 dup=    0 fail=  937 |   613.8 req/s | elapsed=1.6s
+[2026-03-16 14:14:20] Batch #  36 | users   35001-  36000 | ok=   63 dup=    0 fail=  937 |   626.2 req/s | elapsed=1.6s
+[2026-03-16 14:14:21] Batch #  37 | users   36001-  37000 | ok=   77 dup=    0 fail=  923 |   610.6 req/s | elapsed=1.6s
+[2026-03-16 14:14:23] Batch #  38 | users   37001-  38000 | ok=   85 dup=    0 fail=  915 |   608.6 req/s | elapsed=1.6s
+[2026-03-16 14:14:25] Batch #  39 | users   38001-  39000 | ok=   68 dup=    0 fail=  932 |   597.0 req/s | elapsed=1.7s
+[2026-03-16 14:14:26] Batch #  40 | users   39001-  40000 | ok=   62 dup=    0 fail=  938 |   633.4 req/s | elapsed=1.6s
+[2026-03-16 14:14:28] Batch #  41 | users   40001-  41000 | ok=   87 dup=    0 fail=  913 |   602.9 req/s | elapsed=1.7s
+[2026-03-16 14:14:29] Batch #  42 | users   41001-  42000 | ok=   75 dup=    0 fail=  925 |   618.5 req/s | elapsed=1.6s
+[2026-03-16 14:14:31] Batch #  43 | users   42001-  43000 | ok=   76 dup=    0 fail=  924 |   609.7 req/s | elapsed=1.6s
+[2026-03-16 14:14:33] Batch #  44 | users   43001-  44000 | ok=   79 dup=    0 fail=  921 |   632.3 req/s | elapsed=1.6s
+[2026-03-16 14:14:34] Batch #  45 | users   44001-  45000 | ok=   80 dup=    0 fail=  920 |   614.2 req/s | elapsed=1.6s
+[2026-03-16 14:14:36] Batch #  46 | users   45001-  46000 | ok=   54 dup=    0 fail=  946 |   683.3 req/s | elapsed=1.5s
+[2026-03-16 14:14:37] Batch #  47 | users   46001-  47000 | ok=   45 dup=    0 fail=  955 |   713.9 req/s | elapsed=1.4s
+[2026-03-16 14:14:38] Batch #  48 | users   47001-  48000 | ok=   61 dup=    0 fail=  939 |   753.5 req/s | elapsed=1.3s
+[2026-03-16 14:14:40] Batch #  49 | users   48001-  49000 | ok=   50 dup=    0 fail=  950 |   896.7 req/s | elapsed=1.1s
+[2026-03-16 14:14:41] Batch #  50 | users   49001-  50000 | ok=   51 dup=    0 fail=  949 |   940.9 req/s | elapsed=1.1s
+[2026-03-16 14:14:42] Batch #  51 | users   50001-  51000 | ok=   52 dup=    0 fail=  948 |   967.2 req/s | elapsed=1.0s
+[2026-03-16 14:14:43] Batch #  52 | users   51001-  52000 | ok=   18 dup=    0 fail=  982 |   958.0 req/s | elapsed=1.0s
+[2026-03-16 14:14:44] Batch #  53 | users   52001-  53000 | ok=   61 dup=    0 fail=  939 |  1089.8 req/s | elapsed=0.9s
+[2026-03-16 14:14:45] Batch #  54 | users   53001-  54000 | ok=   52 dup=    0 fail=  948 |   896.7 req/s | elapsed=1.1s
+[2026-03-16 14:14:45] Batch #  55 | users   54001-  55000 | ok=   43 dup=    0 fail=  957 |  1411.9 req/s | elapsed=0.7s
+
+========================================================================
+  Session started: 2026-03-16 16:10:20
+  CSV: D:\Yoong testing\stress-test\stress_test_users.csv  (1,000,000 users)
+========================================================================
+[2026-03-16 16:10:31] Batch #   1 | users       1-   1000 | ok=    0 dup= 1000 fail=    0 |    70.5 req/s | elapsed=14.2s
+[2026-03-16 16:10:36] Batch #   2 | users    1001-   2000 | ok=    0 dup= 1000 fail=    0 |   202.8 req/s | elapsed=4.9s
+[2026-03-16 16:10:38] Batch #   3 | users    2001-   3000 | ok=    0 dup= 1000 fail=    0 |   418.0 req/s | elapsed=2.4s
+[2026-03-16 16:10:43] Batch #   4 | users    3001-   4000 | ok=    0 dup= 1000 fail=    0 |   208.5 req/s | elapsed=4.8s
+[2026-03-16 16:10:46] Batch #   5 | users    4001-   5000 | ok=    0 dup= 1000 fail=    0 |   320.4 req/s | elapsed=3.1s
+[2026-03-16 16:10:51] Batch #   6 | users    5001-   6000 | ok=    0 dup= 1000 fail=    0 |   226.6 req/s | elapsed=4.4s
+[2026-03-16 16:10:53] Batch #   7 | users    6001-   7000 | ok=    0 dup= 1000 fail=    0 |   411.6 req/s | elapsed=2.4s
+[2026-03-16 16:11:00] Batch #   8 | users    7001-   8000 | ok=   96 dup=  621 fail=  283 |   140.2 req/s | elapsed=7.1s
+[2026-03-16 16:11:09] Batch #   9 | users    8001-   9000 | ok=  340 dup=  161 fail=  499 |   118.7 req/s | elapsed=8.4s
+[2026-03-16 16:11:17] Batch #  10 | users    9001-  10000 | ok=  284 dup=  168 fail=  548 |   121.8 req/s | elapsed=8.2s
+[2026-03-16 16:11:25] Batch #  11 | users   10001-  11000 | ok=  338 dup=  133 fail=  529 |   122.5 req/s | elapsed=8.2s
+[2026-03-16 16:11:29] Batch #  12 | users   11001-  12000 | ok=  161 dup=   55 fail=  784 |   252.5 req/s | elapsed=4.0s
+[2026-03-16 16:11:31] Batch #  13 | users   12001-  13000 | ok=  112 dup=   25 fail=  863 |   418.3 req/s | elapsed=2.4s
+[2026-03-16 16:11:33] Batch #  14 | users   13001-  14000 | ok=   69 dup=   13 fail=  918 |   521.9 req/s | elapsed=1.9s
+[2026-03-16 16:11:35] Batch #  15 | users   14001-  15000 | ok=   63 dup=    5 fail=  932 |   569.3 req/s | elapsed=1.8s
+[2026-03-16 16:11:37] Batch #  16 | users   15001-  16000 | ok=   51 dup=   11 fail=  938 |   600.7 req/s | elapsed=1.7s
+[2026-03-16 16:11:38] Batch #  17 | users   16001-  17000 | ok=   92 dup=   11 fail=  897 |   637.8 req/s | elapsed=1.6s
+[2026-03-16 16:11:40] Batch #  18 | users   17001-  18000 | ok=   53 dup=    3 fail=  944 |   645.5 req/s | elapsed=1.5s
+[2026-03-16 16:11:41] Batch #  19 | users   18001-  19000 | ok=   73 dup=    7 fail=  920 |   615.4 req/s | elapsed=1.6s
+[2026-03-16 16:11:43] Batch #  20 | users   19001-  20000 | ok=   65 dup=    5 fail=  930 |   609.8 req/s | elapsed=1.6s
+[2026-03-16 16:11:45] Batch #  21 | users   20001-  21000 | ok=   62 dup=    4 fail=  934 |   613.8 req/s | elapsed=1.6s
+[2026-03-16 16:11:46] Batch #  22 | users   21001-  22000 | ok=   96 dup=    7 fail=  897 |   602.0 req/s | elapsed=1.7s
+[2026-03-16 16:11:48] Batch #  23 | users   22001-  23000 | ok=   61 dup=   10 fail=  929 |   625.5 req/s | elapsed=1.6s
+[2026-03-16 16:11:49] Batch #  24 | users   23001-  24000 | ok=   70 dup=    6 fail=  924 |   624.6 req/s | elapsed=1.6s
+[2026-03-16 16:11:51] Batch #  25 | users   24001-  25000 | ok=   68 dup=    5 fail=  927 |   628.1 req/s | elapsed=1.6s
+[2026-03-16 16:11:53] Batch #  26 | users   25001-  26000 | ok=   78 dup=    4 fail=  918 |   618.2 req/s | elapsed=1.6s
+[2026-03-16 16:11:54] Batch #  27 | users   26001-  27000 | ok=   63 dup=    5 fail=  932 |   595.9 req/s | elapsed=1.7s
+[2026-03-16 16:11:56] Batch #  28 | users   27001-  28000 | ok=   73 dup=    6 fail=  921 |   610.7 req/s | elapsed=1.6s
+[2026-03-16 16:11:58] Batch #  29 | users   28001-  29000 | ok=   60 dup=    5 fail=  935 |   637.0 req/s | elapsed=1.6s
+[2026-03-16 16:11:59] Batch #  30 | users   29001-  30000 | ok=   55 dup=    4 fail=  941 |   610.0 req/s | elapsed=1.6s
+[2026-03-16 16:12:01] Batch #  31 | users   30001-  31000 | ok=   68 dup=    4 fail=  928 |   633.1 req/s | elapsed=1.6s
+[2026-03-16 16:39:23] Batch #  32 (partial) | users   31001-  31663 | ok=   60 dup=    2 fail=  601 |     0.4 req/s | elapsed=1641.9s
+  Session ended: 2026-03-16 16:39:23
+========================================================================
+
+========================================================================
+  Session started: 2026-03-16 16:39:27
+  CSV: D:\Yoong testing\stress-test\stress_test_users.csv  (1,000,000 users)
+========================================================================

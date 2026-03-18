@@ -1,0 +1,1051 @@
+{
+  "game-vendor/list": {
+    "url": "https://new.98ent.com/ns9/api/public/partner/game-vendor/list",
+    "method": "POST",
+    "requestHeaders": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "authorization": "Bearer ZTk3NGJjM2UtZjhkMC00MThhLWJlOTYtMDM3YWI1NzhjMGVk",
+      "referer": "https://s9.com/",
+      "accept-language": "en-US",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"HeadlessChrome\";v=\"145\", \"Chromium\";v=\"145\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36",
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "requestBody": {
+      "header": {
+        "page_url": "https://s9.com/games?ven_id=600005",
+        "version": "v0.0.1"
+      },
+      "condition": {
+        "mode": 2,
+        "page_index": 0,
+        "page_size": 50
+      },
+      "param": {}
+    },
+    "responseStatus": 200,
+    "responseHeaders": {
+      "access-control-max-age": "172800",
+      "access-control-expose-headers": "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers",
+      "content-encoding": "zstd",
+      "cf-cache-status": "DYNAMIC",
+      "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=9ZY3y6UQ5XyaLSRdmjNGsg35P5z8O2c%2FZBXkrbiAlG2ojHGzA6mFcjDyoCqMbcwF0HZQO79CfLRY0zVHCBHU1NLd0oVxtg3DWFCeH%2FLN%2Bx1p%2B81fMX0DuB8%3D\"}]}",
+      "access-control-allow-methods": "POST, GET, OPTIONS, PUT, DELETE,UPDATE",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "server-timing": "cfExtPri",
+      "date": "Fri, 13 Mar 2026 00:21:02 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "priority": "u=1,i",
+      "access-control-allow-headers": "Authorization, content-type, Content-Length, X-CSRF-Token, Token,session,Access-Control-Allow-Headers,account",
+      "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+      "access-control-allow-credentials": "true",
+      "cf-ray": "9db6e053fb008cfd-KUL",
+      "access-control-allow-origin": "https://s9.com",
+      "server": "cloudflare"
+    },
+    "responseBody": {
+      "action": 2014,
+      "code": 1,
+      "msg": "success",
+      "condition": {
+        "mode": 2
+      },
+      "count": 53,
+      "list": [
+        {
+          "ven_id": 100001,
+          "code": "ORANGE",
+          "abbr": "ORANGE",
+          "name": "ORANGE",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 200001,
+          "code": "LUCKOAI",
+          "abbr": "LUCKOAI",
+          "name": "LUCKOAI",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 300001,
+          "code": "GL",
+          "abbr": "GL",
+          "name": "GL",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 400001,
+          "code": "BETBY",
+          "abbr": "BETBY",
+          "name": "BETBY",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 500001,
+          "code": "DBLIVE",
+          "abbr": "DBLIVE",
+          "name": "DBLIVE",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600001,
+          "code": "ZHIFENG_AA",
+          "abbr": "ZF_AA",
+          "name": "AA Sexy",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600002,
+          "code": "ZHIFENG_ALG",
+          "abbr": "ZF_ALG",
+          "name": "Alize Slots",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600003,
+          "code": "ZHIFENG_ALGM",
+          "abbr": "ZF_ALGM",
+          "name": "Alize Mini",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600004,
+          "code": "ZHIFENG_AMBS",
+          "abbr": "ZF_AMBS",
+          "name": "Askmeslot",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600005,
+          "code": "ZHIFENG_AMUSNET",
+          "abbr": "ZF_AMUSNET",
+          "name": "Amusnet",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600006,
+          "code": "ZHIFENG_AP",
+          "abbr": "ZF_AP",
+          "name": "AdvantPlay",
+          "status": 2,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600007,
+          "code": "ZHIFENG_AVIA",
+          "abbr": "ZF_AVIA",
+          "name": "Aviatrix",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600008,
+          "code": "ZHIFENG_BB",
+          "abbr": "ZF_BB",
+          "name": "Live88",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600009,
+          "code": "ZHIFENG_BNG",
+          "abbr": "ZF_BNG",
+          "name": "BNG",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600010,
+          "code": "ZHIFENG_CQ9",
+          "abbr": "ZF_CQ9",
+          "name": "CQ9",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600011,
+          "code": "ZHIFENG_DB",
+          "abbr": "ZF_DB",
+          "name": "DB Slots",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600012,
+          "code": "ZHIFENG_EVOBTG",
+          "abbr": "ZF_EVOBTG",
+          "name": "Big Time Gaming",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600013,
+          "code": "ZHIFENG_EVOLIVE",
+          "abbr": "ZF_EVOLIVE",
+          "name": "Evolution Live",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600014,
+          "code": "ZHIFENG_EVONLC",
+          "abbr": "ZF_EVONLC",
+          "name": "NoLimit City",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600015,
+          "code": "ZHIFENG_EVONTT",
+          "abbr": "ZF_EVONTT",
+          "name": "Netent",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600016,
+          "code": "ZHIFENG_EVOP",
+          "abbr": "ZF_EVOP",
+          "name": "Evoplay",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600017,
+          "code": "ZHIFENG_EVORT",
+          "abbr": "ZF_EVORT",
+          "name": "Red Tiger",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600018,
+          "code": "ZHIFENG_EW",
+          "abbr": "ZF_EW",
+          "name": "EpicWin",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600019,
+          "code": "ZHIFENG_EZUGI",
+          "abbr": "ZF_EZUGI",
+          "name": "Ezugi",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600020,
+          "code": "ZHIFENG_FC",
+          "abbr": "ZF_FC",
+          "name": "FaChai",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600021,
+          "code": "ZHIFENG_GPK7MJ",
+          "abbr": "ZF_GPK7MJ",
+          "name": "7mojo",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600022,
+          "code": "ZHIFENG_GPKBG",
+          "abbr": "ZF_GPKBG",
+          "name": "Bgaming",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600023,
+          "code": "ZHIFENG_GPKBM",
+          "abbr": "ZF_GPKBM",
+          "name": "Booming",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600024,
+          "code": "ZHIFENG_GPKSPINO",
+          "abbr": "ZF_GPKSPINO",
+          "name": "Spinomenal",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600025,
+          "code": "ZHIFENG_GPKTBG",
+          "abbr": "ZF_GPKTBG",
+          "name": "Turbo Games",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600026,
+          "code": "ZHIFENG_HB",
+          "abbr": "ZF_HB",
+          "name": "Habanero",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600027,
+          "code": "ZHIFENG_HSD",
+          "abbr": "ZF_HSD",
+          "name": "Hacksaw",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600028,
+          "code": "ZHIFENG_INOUT",
+          "abbr": "ZF_INOUT",
+          "name": "Inout",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600029,
+          "code": "ZHIFENG_JDB",
+          "abbr": "ZF_JDB",
+          "name": "JDB",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600030,
+          "code": "ZHIFENG_JDB-GTF",
+          "abbr": "ZF_JDB-GTF",
+          "name": "GTF",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600031,
+          "code": "ZHIFENG_JL",
+          "abbr": "ZF_JL",
+          "name": "Jili",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600032,
+          "code": "ZHIFENG_LIVE22",
+          "abbr": "ZF_LIVE22",
+          "name": "Live22",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600033,
+          "code": "ZHIFENG_LT",
+          "abbr": "ZF_LT",
+          "name": "Lite",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600034,
+          "code": "ZHIFENG_MG",
+          "abbr": "ZF_MG",
+          "name": "Micro Gaming",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600035,
+          "code": "ZHIFENG_PGS",
+          "abbr": "ZF_PGS",
+          "name": "PG Soft",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600036,
+          "code": "ZHIFENG_PNG",
+          "abbr": "ZF_PNG",
+          "name": "PlayNGo",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600037,
+          "code": "ZHIFENG_PP",
+          "abbr": "ZF_PP",
+          "name": "Pragmatic Play",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600038,
+          "code": "ZHIFENG_QM",
+          "abbr": "ZF_QM",
+          "name": "KingMidas",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600039,
+          "code": "ZHIFENG_RG",
+          "abbr": "ZF_RG",
+          "name": "Relax Gaming",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600040,
+          "code": "ZHIFENG_SPB",
+          "abbr": "ZF_SPB",
+          "name": "Spribe",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600041,
+          "code": "ZHIFENG_SPDG",
+          "abbr": "ZF_SPDG",
+          "name": "Spade Gaming",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600042,
+          "code": "ZHIFENG_TBP",
+          "abbr": "ZF_TBP",
+          "name": "The Better Platform",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600043,
+          "code": "ZHIFENG_WIFY",
+          "abbr": "ZF_WIFY",
+          "name": "Winfinity",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600044,
+          "code": "ZHIFENG_YB",
+          "abbr": "ZF_YB",
+          "name": "YeeBet",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 600045,
+          "code": "ZHIFENG_YBNGO",
+          "abbr": "ZF_YBNGO",
+          "name": "YellowBat",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 700001,
+          "code": "LG_BETBY",
+          "abbr": "LG_BETBY",
+          "name": "Betby",
+          "status": 1,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 800001,
+          "code": "XPG",
+          "abbr": "XPG",
+          "name": "XPG",
+          "status": 2,
+          "weight": 0,
+          "extra": {}
+        },
+        {
+          "ven_id": 900001,
+          "code": "SG",
+          "abbr": "SG",
+          "name": "SG",
+          "status": 2,
+          "weight": 0,
+          "extra": {}
+        }
+      ]
+    }
+  },
+  "partner/game/list": {
+    "url": "https://new.98ent.com/ns9/api/public/partner/game/list",
+    "method": "POST",
+    "requestHeaders": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "authorization": "Bearer ZTk3NGJjM2UtZjhkMC00MThhLWJlOTYtMDM3YWI1NzhjMGVk",
+      "referer": "https://s9.com/",
+      "accept-language": "en-US",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"HeadlessChrome\";v=\"145\", \"Chromium\";v=\"145\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36",
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "requestBody": {
+      "header": {
+        "page_url": "https://s9.com/games?ven_id=600005",
+        "version": "v0.0.1"
+      },
+      "condition": {
+        "page_index": 0,
+        "page_size": 15,
+        "mode": 2,
+        "ven_id": 600005
+      },
+      "credential": {
+        "did": 2249827630,
+        "mode": 1,
+        "pid": 1,
+        "uid": 29140028,
+        "token": "ZTk3NGJjM2UtZjhkMC00MThhLWJlOTYtMDM3YWI1NzhjMGVk"
+      },
+      "param": {}
+    },
+    "responseStatus": 200,
+    "responseHeaders": {
+      "access-control-max-age": "172800",
+      "access-control-expose-headers": "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers",
+      "content-encoding": "zstd",
+      "cf-cache-status": "DYNAMIC",
+      "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=6oeQJtEyKPwqN38KSPhg5FuZSxrg8SDZQgcPnqLJvmzHNaNX3szT%2FasAoS5qxFhHtqbVPwkSwUx3tLXbveRHbQU39pA2%2Fqdit7yJGINfLY0LNdnXlG8XP0E%3D\"}]}",
+      "access-control-allow-methods": "POST, GET, OPTIONS, PUT, DELETE,UPDATE",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "server-timing": "cfExtPri",
+      "date": "Fri, 13 Mar 2026 00:21:03 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "priority": "u=1,i",
+      "access-control-allow-headers": "Authorization, content-type, Content-Length, X-CSRF-Token, Token,session,Access-Control-Allow-Headers,account",
+      "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+      "access-control-allow-credentials": "true",
+      "cf-ray": "9db6e053faff8cfd-KUL",
+      "access-control-allow-origin": "https://s9.com",
+      "server": "cloudflare"
+    },
+    "responseBody": {
+      "action": 2011,
+      "code": 1,
+      "msg": "success",
+      "condition": {
+        "mode": 2,
+        "page_index": 0,
+        "page_size": 15,
+        "cat_id": 0,
+        "ven_id": 600005,
+        "group_id": 0
+      },
+      "count": 161,
+      "games": [
+        {
+          "game_id": 1297,
+          "group_id": 11,
+          "cat_id": 5,
+          "ven_id": 600005,
+          "code": "AMUSNET-LC-2",
+          "name": "Dynamic Roulette 120x (Entertainer)",
+          "image": "https://assets.gasea168.com/game/AMUSNET/LIVE/AMUSNET_15.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1298,
+          "group_id": 11,
+          "cat_id": 5,
+          "ven_id": 600005,
+          "code": "AMUSNET-LC-3",
+          "name": "Live European Roulette (Dealer)",
+          "image": "https://assets.gasea168.com/game/AMUSNET/LIVE/AMUSNET_19.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1299,
+          "group_id": 11,
+          "cat_id": 5,
+          "ven_id": 600005,
+          "code": "AMUSNET-LC-4",
+          "name": "European Roulette",
+          "image": "https://assets.gasea168.com/game/AMUSNET/LIVE/AMUSNET_20201.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1300,
+          "group_id": 11,
+          "cat_id": 5,
+          "ven_id": 600005,
+          "code": "AMUSNET-LC-5",
+          "name": "Onyx Auto Roulette",
+          "image": "https://assets.gasea168.com/game/AMUSNET/LIVE/AMUSNET_29.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1301,
+          "group_id": 11,
+          "cat_id": 5,
+          "ven_id": 600005,
+          "code": "AMUSNET-LC-6",
+          "name": "Live Speed Roulette (Dealer)",
+          "image": "https://assets.gasea168.com/game/AMUSNET/LIVE/AMUSNET_30.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1305,
+          "group_id": 11,
+          "cat_id": 5,
+          "ven_id": 600005,
+          "code": "AMUSNET-LC-10",
+          "name": "Vegas Roulette 500x (Entertainer)",
+          "image": "https://assets.gasea168.com/game/AMUSNET/LIVE/AMUSNET_38.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1306,
+          "group_id": 11,
+          "cat_id": 5,
+          "ven_id": 600005,
+          "code": "AMUSNET-LC-11",
+          "name": "Live Roulette - Russian (Dealer)",
+          "image": "https://assets.gasea168.com/game/AMUSNET/LIVE/AMUSNET_40.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1313,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-4",
+          "name": "Diamond Plus",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_402.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1315,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-6",
+          "name": "Mighty Sparta",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_404.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1316,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-7",
+          "name": "Candy Palace",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_405.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1318,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-9",
+          "name": "Fruity Time",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_407.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1319,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-10",
+          "name": "40 Luxury Dice",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_408.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1321,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-12",
+          "name": "Bulky Fruits",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_410.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1322,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-13",
+          "name": "Hot Deco",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_411.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        },
+        {
+          "game_id": 1323,
+          "group_id": 12,
+          "cat_id": 7,
+          "ven_id": 600005,
+          "code": "AMUSNET-SL-14",
+          "name": "Cocktail Rush",
+          "image": "https://assets.gasea168.com/game/AMUSNET/Slots/AMUSNET_412.png",
+          "names": [],
+          "images": [],
+          "weight": 0,
+          "status": 1,
+          "fresh": false,
+          "popular": false,
+          "suggested": false,
+          "extra": {},
+          "maintain": false,
+          "favourite": false,
+          "online_count": 0
+        }
+      ]
+    }
+  },
+  "wallet/list": {
+    "url": "https://new.98ent.com/ns9/api/gus/wallet/list",
+    "method": "POST",
+    "requestHeaders": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "authorization": "Bearer ZTk3NGJjM2UtZjhkMC00MThhLWJlOTYtMDM3YWI1NzhjMGVk",
+      "referer": "https://s9.com/",
+      "accept-language": "en-US",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"HeadlessChrome\";v=\"145\", \"Chromium\";v=\"145\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36",
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "requestBody": {
+      "header": {
+        "page_url": "https://s9.com/games?ven_id=600005",
+        "version": "v0.0.1"
+      },
+      "condition": {
+        "kind": 1,
+        "mode": 2
+      },
+      "credential": {
+        "did": 2249827630,
+        "mode": 1,
+        "pid": 1,
+        "uid": 29140028,
+        "token": "ZTk3NGJjM2UtZjhkMC00MThhLWJlOTYtMDM3YWI1NzhjMGVk"
+      },
+      "param": {}
+    },
+    "responseStatus": 200,
+    "responseHeaders": {
+      "access-control-max-age": "172800",
+      "access-control-expose-headers": "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers",
+      "content-encoding": "zstd",
+      "cf-cache-status": "DYNAMIC",
+      "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Db8aHFouVEsclvNuodkeUgmoWEj0lKTLGceDOTrkIKXtpOmdJFs4oKeRpyhCgz2SSB7x4H3qEOsz%2FNLtyinO29oN7mvZiGGbE7rSEPzexLH%2FewkTFdIecow%3D\"}]}",
+      "access-control-allow-methods": "POST, GET, OPTIONS, PUT, DELETE,UPDATE",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "server-timing": "cfExtPri",
+      "date": "Fri, 13 Mar 2026 00:21:03 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "priority": "u=1,i",
+      "access-control-allow-headers": "Authorization, content-type, Content-Length, X-CSRF-Token, Token,session,Access-Control-Allow-Headers,account",
+      "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+      "access-control-allow-credentials": "true",
+      "cf-ray": "9db6e0567b2e8cfd-KUL",
+      "access-control-allow-origin": "https://s9.com",
+      "server": "cloudflare"
+    },
+    "responseBody": {
+      "action": 100013,
+      "code": 1,
+      "msg": "success",
+      "condition": {
+        "mode": 2,
+        "kind": 1,
+        "currency": ""
+      },
+      "count": 1,
+      "list": [
+        {
+          "id": 11325985,
+          "user_id": 29140028,
+          "kind": 1,
+          "currency": "USD",
+          "balance": 14185,
+          "balance_frozen": 0,
+          "deposited_amt": 10000,
+          "deposited_bonus": 0,
+          "deposited_cnt": 1,
+          "withdrawn_amt": 0,
+          "withdrawn_cnt": 0,
+          "turnover_accrued": 26915,
+          "turnover_required": 0,
+          "extra": {},
+          "updates": 774,
+          "update_at": 1773295412949
+        }
+      ]
+    }
+  },
+  "game/enter": {
+    "url": "https://new.98ent.com/ns9/api/gus/game/enter",
+    "method": "POST",
+    "requestHeaders": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "authorization": "Bearer ZTk3NGJjM2UtZjhkMC00MThhLWJlOTYtMDM3YWI1NzhjMGVk",
+      "referer": "https://s9.com/",
+      "accept-language": "en-US",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"HeadlessChrome\";v=\"145\", \"Chromium\";v=\"145\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.7632.6 Safari/537.36",
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "requestBody": {
+      "header": {
+        "page_url": "https://s9.com/games?ven_id=600005",
+        "version": "v0.0.1"
+      },
+      "param": {
+        "game_id": 1297,
+        "back_url": "https://s9.com/games?ven_id=600005"
+      },
+      "credential": {
+        "did": 2249827630,
+        "mode": 1,
+        "pid": 1,
+        "uid": 29140028,
+        "token": "ZTk3NGJjM2UtZjhkMC00MThhLWJlOTYtMDM3YWI1NzhjMGVk"
+      }
+    },
+    "responseStatus": 200,
+    "responseHeaders": {
+      "access-control-max-age": "172800",
+      "access-control-expose-headers": "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers",
+      "content-encoding": "zstd",
+      "cf-cache-status": "DYNAMIC",
+      "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=p7rVTaHueMuL1ej2DfeOfDWmEw41iOVhwPyoGoBUgDwcu5AQ4KpRc7rWHfqDHo9A89qjhI0Pe7SBVMXRlPnITwXQBOFG8KOEPLtAReAlnKsfpdY2rZ2wdL4%3D\"}]}",
+      "access-control-allow-methods": "POST, GET, OPTIONS, PUT, DELETE,UPDATE",
+      "alt-svc": "h3=\":443\"; ma=86400",
+      "server-timing": "cfExtPri",
+      "date": "Fri, 13 Mar 2026 00:21:07 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "priority": "u=1,i",
+      "access-control-allow-headers": "Authorization, content-type, Content-Length, X-CSRF-Token, Token,session,Access-Control-Allow-Headers,account",
+      "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+      "access-control-allow-credentials": "true",
+      "cf-ray": "9db6e072ad368cfd-KUL",
+      "access-control-allow-origin": "https://s9.com",
+      "server": "cloudflare"
+    },
+    "responseBody": {
+      "code": 1,
+      "msg": "",
+      "info": {
+        "redirect_url": "https://staging-pod.games.amusnet.io/api/v2/MGL?defenceCode=6e6dd24c-c8ff-43a7-a899-c2d67c8e37a7&playerId=16pmfscbja&portalCode=zt001latam_STG_Portal_USD&screenName=16pmfscbja&language=en&country=MY&gameId=15"
+      }
+    }
+  }
+}
