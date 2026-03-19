@@ -195,23 +195,23 @@ export async function apiValidateVendorGamesFlowV2(
     vendorId: number,
     vendorName: string
 ): Promise<void> {
-    const credential = loadCredential();
-    console.log(`\n=== [${vendorName}] v2 validation starting (ven_id=${vendorId}, concurrent=${MAX_CONCURRENT_GAMES}) ===`);
+    // const credential = loadCredential();
+    // console.log(`\n=== [${vendorName}] v2 validation starting (ven_id=${vendorId}, concurrent=${MAX_CONCURRENT_GAMES}) ===`);
 
-    // ── Step 1: Fetch all games via API ──────────────────────────────────────
-    let games: GameInfo[];
-    try {
-        games = await getGameList(credential, vendorId);
-    } catch (e: any) {
-        console.error(`[${vendorName}] Failed to fetch game list: ${e.message}`);
-        return;
-    }
+    // // ── Step 1: Fetch all games via API ──────────────────────────────────────
+    // let games: GameInfo[];
+    // try {
+    //     games = await getGameList(credential, vendorId);
+    // } catch (e: any) {
+    //     console.error(`[${vendorName}] Failed to fetch game list: ${e.message}`);
+    //     return;
+    // }
 
-    if (games.length === 0) {
-        console.warn(`[${vendorName}] No active games found.`);
-        return;
-    }
-    console.log(`[${vendorName}] ${games.length} games to test (max ${MAX_CONCURRENT_GAMES} concurrent).`);
+    // if (games.length === 0) {
+    //     console.warn(`[${vendorName}] No active games found.`);
+    //     return;
+    // }
+    // console.log(`[${vendorName}] ${games.length} games to test (max ${MAX_CONCURRENT_GAMES} concurrent).`);
 
     // ── Step 2: Run all games through a semaphore-based concurrent queue ──────
     //
@@ -220,106 +220,138 @@ export async function apiValidateVendorGamesFlowV2(
     // context.close() — so the next queued game starts the instant a slot opens.
     //
     // This eliminates the inter-batch idle time of the old fixed-batch model.
-    const results: GameResult[] = new Array(games.length); // pre-sized for ordering
-    const semaphore = new Semaphore(MAX_CONCURRENT_GAMES);
+    // const results: GameResult[] = new Array(games.length); // pre-sized for ordering
+    // const semaphore = new Semaphore(MAX_CONCURRENT_GAMES);
 
-    await Promise.all(
-        games.map(async (game, globalIndex) => {
-            // ── Startup stagger ───────────────────────────────────────────────
-            // Game 0 gets a warmup delay to prevent a cold-start API burst.
-            // Games 1–5 get incremental stagger. Games 6+ wait only STAGGER_MS
-            // (they queue behind the semaphore anyway, so extra stagger is wasteful).
-            const staggerMs = globalIndex === 0
-                ? INITIAL_WARMUP_MS
-                : Math.min(globalIndex, MAX_CONCURRENT_GAMES - 1) * STAGGER_MS;
-            if (staggerMs > 0) await sleep(staggerMs);
+    // await Promise.all(
+    //     games.map(async (game, globalIndex) => {
+    //         // ── Startup stagger ───────────────────────────────────────────────
+    //         // Game 0 gets a warmup delay to prevent a cold-start API burst.
+    //         // Games 1–5 get incremental stagger. Games 6+ wait only STAGGER_MS
+    //         // (they queue behind the semaphore anyway, so extra stagger is wasteful).
+    //         const staggerMs = globalIndex === 0
+    //             ? INITIAL_WARMUP_MS
+    //             : Math.min(globalIndex, MAX_CONCURRENT_GAMES - 1) * STAGGER_MS;
+    //         if (staggerMs > 0) await sleep(staggerMs);
 
-            // Block until a concurrency slot is available
-            await semaphore.acquire();
+    //         // Block until a concurrency slot is available
+    //         await semaphore.acquire();
 
-            const slotLabel = `[${vendorName}][${globalIndex + 1}/${games.length}]`;
-            console.log(`${slotLabel} Starting: ${game.name}`);
+    //         const slotLabel = `[${vendorName}][${globalIndex + 1}/${games.length}]`;
+    //         console.log(`${slotLabel} Starting: ${game.name}`);
 
-            let finalResult: GameResult | null = null;
+    //         let finalResult: GameResult | null = null;
 
-            // ── Retry loop ────────────────────────────────────────────────────
-            // Each attempt gets a fresh browser context. The retry loop runs
-            // entirely INSIDE the semaphore slot, so no extra concurrency slots
-            // are consumed while waiting between retries.
-            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-                if (attempt > 0) {
-                    console.log(`${slotLabel} ↻ Retry ${attempt}/${MAX_RETRIES} for: ${game.name} (waiting ${RETRY_DELAY_MS}ms)`);
-                    await sleep(RETRY_DELAY_MS);
-                }
+    //         // ── Retry loop ────────────────────────────────────────────────────
+    //         // Each attempt gets a fresh browser context. The retry loop runs
+    //         // entirely INSIDE the semaphore slot, so no extra concurrency slots
+    //         // are consumed while waiting between retries.
+    //         for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    //             if (attempt > 0) {
+    //                 console.log(`${slotLabel} ↻ Retry ${attempt}/${MAX_RETRIES} for: ${game.name} (waiting ${RETRY_DELAY_MS}ms)`);
+    //                 await sleep(RETRY_DELAY_MS);
+    //             }
 
-                const context = await browser.newContext({
-                    storageState: AUTH_STATE,
-                    ignoreHTTPSErrors: true,
-                });
+    //             const context = await browser.newContext({
+    //                 storageState: AUTH_STATE,
+    //                 ignoreHTTPSErrors: true,
+    //             });
 
+    //             try {
+    //                 const gamePage: Page = await context.newPage();
+    //                 const result = await validateSingleGame(gamePage, credential, game, vendorId);
+    //                 result.retries = attempt;
+
+    //                 if (result.status === 'Pass') {
+    //                     // ✅ Passed — stop retrying
+    //                     finalResult = result;
+    //                     if (attempt > 0) {
+    //                         console.log(`${slotLabel} ✅ Passed on retry ${attempt}: ${game.name}`);
+    //                     }
+    //                     break;
+    //                 }
+
+    //                 // ❌ Failed — check if we should retry
+    //                 const isAuthFailure = result.errorLabel.startsWith('AUTH_FAILURE');
+    //                 if (isAuthFailure || attempt >= MAX_RETRIES) {
+    //                     // Auth failures never retry. Last attempt: record the failure.
+    //                     finalResult = result;
+    //                     break;
+    //                 }
+
+    //                 // Will retry — record this attempt's error for logging
+    //                 console.log(`${slotLabel} ✗ Attempt ${attempt + 1} failed | Gate ${result.gate}: ${result.errorLabel}`);
+    //                 finalResult = result; // carry forward in case next attempt also fails
+
+    //             } catch (e: any) {
+    //                 const errorResult: GameResult = {
+    //                     gameId: game.game_id,
+    //                     gameName: game.name,
+    //                     status: 'Fail',
+    //                     gate: 2,
+    //                     errorLabel: `Unexpected error: ${e.message.slice(0, 60)}`,
+    //                     retries: attempt,
+    //                 };
+    //                 if (attempt >= MAX_RETRIES) {
+    //                     finalResult = errorResult;
+    //                     break;
+    //                 }
+    //                 console.log(`${slotLabel} ✗ Attempt ${attempt + 1} threw: ${e.message.slice(0, 60)}`);
+    //                 finalResult = errorResult;
+    //             } finally {
+    //                 await context.close().catch(() => {});
+    //             }
+    //         }
+
+    //         results[globalIndex] = finalResult ?? {
+    //             gameId: game.game_id,
+    //             gameName: game.name,
+    //             status: 'Fail',
+    //             gate: 0,
+    //             errorLabel: 'No result recorded (internal error)',
+    //             retries: MAX_RETRIES,
+    //         };
+
+    //         const r = results[globalIndex];
+    //         const retryNote = r.retries > 0 ? ` [retried ${r.retries}×]` : '';
+    //         const detail = r.status === 'Fail' ? ` | Gate ${r.gate}: ${r.errorLabel}` : '';
+    //         console.log(`${slotLabel} → ${r.status}${retryNote}${detail}`);
+
+    //         semaphore.release();
+    //     })
+    // );
+
+    const credential = loadCredential();
+    const games = await getGameList(credential, vendorId);
+    
+    // Split games into larger "Super-Batches" to allow system cooldown
+    const SUPER_BATCH_SIZE = 50; 
+    const results: GameResult[] = [];
+
+    for (let i = 0; i < games.length; i += SUPER_BATCH_SIZE) {
+        const chunk = games.slice(i, i + SUPER_BATCH_SIZE);
+        const semaphore = new Semaphore(MAX_CONCURRENT_GAMES);
+
+        await Promise.all(
+            chunk.map(async (game, index) => {
+                await semaphore.acquire();
                 try {
-                    const gamePage: Page = await context.newPage();
-                    const result = await validateSingleGame(gamePage, credential, game, vendorId);
-                    result.retries = attempt;
-
-                    if (result.status === 'Pass') {
-                        // ✅ Passed — stop retrying
-                        finalResult = result;
-                        if (attempt > 0) {
-                            console.log(`${slotLabel} ✅ Passed on retry ${attempt}: ${game.name}`);
-                        }
-                        break;
-                    }
-
-                    // ❌ Failed — check if we should retry
-                    const isAuthFailure = result.errorLabel.startsWith('AUTH_FAILURE');
-                    if (isAuthFailure || attempt >= MAX_RETRIES) {
-                        // Auth failures never retry. Last attempt: record the failure.
-                        finalResult = result;
-                        break;
-                    }
-
-                    // Will retry — record this attempt's error for logging
-                    console.log(`${slotLabel} ✗ Attempt ${attempt + 1} failed | Gate ${result.gate}: ${result.errorLabel}`);
-                    finalResult = result; // carry forward in case next attempt also fails
-
-                } catch (e: any) {
-                    const errorResult: GameResult = {
-                        gameId: game.game_id,
-                        gameName: game.name,
-                        status: 'Fail',
-                        gate: 2,
-                        errorLabel: `Unexpected error: ${e.message.slice(0, 60)}`,
-                        retries: attempt,
-                    };
-                    if (attempt >= MAX_RETRIES) {
-                        finalResult = errorResult;
-                        break;
-                    }
-                    console.log(`${slotLabel} ✗ Attempt ${attempt + 1} threw: ${e.message.slice(0, 60)}`);
-                    finalResult = errorResult;
+                    // Existing validation logic...
+                    const result = await runWithRetry(browser, game, vendorId, credential);
+                    results.push(result);
                 } finally {
-                    await context.close().catch(() => {});
+                    semaphore.release();
                 }
-            }
+            })
+        );
 
-            results[globalIndex] = finalResult ?? {
-                gameId: game.game_id,
-                gameName: game.name,
-                status: 'Fail',
-                gate: 0,
-                errorLabel: 'No result recorded (internal error)',
-                retries: MAX_RETRIES,
-            };
-
-            const r = results[globalIndex];
-            const retryNote = r.retries > 0 ? ` [retried ${r.retries}×]` : '';
-            const detail = r.status === 'Fail' ? ` | Gate ${r.gate}: ${r.errorLabel}` : '';
-            console.log(`${slotLabel} → ${r.status}${retryNote}${detail}`);
-
-            semaphore.release();
-        })
-    );
+        // SYSTEM COOLDOWN: Give the OS/Node.js time to reclaim memory 
+        // after every 50 games to prevent cumulative slowdown.
+        if (i + SUPER_BATCH_SIZE < games.length) {
+            console.log(`[${vendorName}] Reached Super-Batch limit. Cooling down for 5s...`);
+            await sleep(5000);
+        }
+    }
 
     // ── Step 3: Print console summary table ──────────────────────────────────
     const passed  = results.filter(r => r.status === 'Pass').length;
@@ -502,4 +534,51 @@ async function detectErrorText(page: Page): Promise<string | null> {
 
 function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+/**
+ * Helper to handle the browser context lifecycle and retries for a single game.
+ * This ensures that even if one game crashes, the context is closed properly.
+ */
+async function runWithRetry(
+    browser: Browser,
+    game: GameInfo,
+    vendorId: number,
+    credential: S9Credential
+): Promise<GameResult> {
+    let finalResult: GameResult | null = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        if (attempt > 0) await sleep(RETRY_DELAY_MS);
+
+        const context = await browser.newContext({
+            storageState: AUTH_STATE,
+            ignoreHTTPSErrors: true,
+        });
+
+        try {
+            const page = await context.newPage();
+            const result = await validateSingleGame(page, credential, game, vendorId);
+            result.retries = attempt;
+
+            if (result.status === 'Pass' || result.errorLabel.startsWith('AUTH_FAILURE')) {
+                finalResult = result;
+                break; 
+            }
+            finalResult = result;
+        } catch (e: any) {
+            finalResult = {
+                gameId: game.game_id,
+                gameName: game.name,
+                status: 'Fail',
+                gate: 2,
+                errorLabel: `Unexpected: ${e.message.slice(0, 50)}`,
+                retries: attempt,
+            };
+        } finally {
+            await context.close().catch(() => {});
+        }
+    }
+    return finalResult!;
 }
