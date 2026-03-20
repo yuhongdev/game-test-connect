@@ -24,7 +24,7 @@
  *
  * ── Run commands ──────────────────────────────────────────────────────────────
  *  All vendors:
- *    npx playwright test tests/v2/ --project=chromium --workers=14
+ *    npx playwright test tests/v2/ --project=chromium --workers=6
  *
  *  Single vendor (debugging) — ALWAYS include --project=chromium:
  *    npx playwright test tests/v2/ --project=chromium -g "v2: Amusnet" --workers=1 --headed
@@ -39,7 +39,7 @@
 import { test } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
-import { apiValidateVendorGamesFlowV2 } from './apiValidationFlowV2';
+import { apiValidateVendorGamesFlowV2 } from './fix memory';
 
 // ── Dynamic vendor list ───────────────────────────────────────────────────────
 //

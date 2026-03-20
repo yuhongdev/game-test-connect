@@ -1,19 +1,44 @@
 /**
- * apiValidationFlowV2.ts — Fully concurrent game validation (v2, improved).
+ * apiValidationFlowV2.ts — Fully concurrent game validation (v2, memory-safe).
  *
- * ── What changed from the original v2 ────────────────────────────────────────
+ * ── What changed from the previous v2 ────────────────────────────────────────
  *
- *  ORIGINAL v2:  sequential BATCHES of GAMES_PER_BATCH
- *    - Games split into chunks of 3
- *    - await Promise.all(chunk) — must wait for ALL games in chunk to finish
- *    - If game 1 takes 20s (slow server), games 2 and 3 sit idle after 11s
- *    - Inter-batch idle time = (slowest game in batch - fastest game in batch)
+ *  FIX 1 — page.route() now always unrouted in a finally block
+ *    BEFORE: route handler added inside try{}, never removed on exception path
+ *    AFTER:  await page.unroute('https://s9.com/**') called in finally{} every time
+ *    IMPACT: Eliminates Chromium-level route state accumulation across vendors
  *
- *  IMPROVED v2:  semaphore-based CONCURRENT QUEUE
- *    - All games dispatched through a Semaphore(MAX_CONCURRENT_GAMES)
- *    - As soon as any game finishes, the next one starts immediately
- *    - Zero inter-batch idle time
- *    - Same memory cap (slot count = MAX_CONCURRENT_GAMES)
+ *  FIX 2 — response listener always removed in finally block
+ *    BEFORE: page.off('response', errorHandler) only called on happy path;
+ *            exception branch returned early and skipped it → listener leaked
+ *    AFTER:  page.off() moved into finally{} so it fires on every exit path
+ *    IMPACT: Eliminates closure-held memory from orphaned event listeners
+ *
+ *  FIX 3 — retry delay moved OUTSIDE the semaphore slot
+ *    BEFORE: sleep(RETRY_DELAY_MS) ran inside runWithRetry while slot was held;
+ *            all 6 slots could block-sleep simultaneously, causing context spikes
+ *    AFTER:  retry sleep happens after semaphore.release(); slot is freed immediately
+ *            after context.close() so next game can start during cooldown
+ *    IMPACT: True MAX_CONCURRENT_GAMES cap is respected even during retries
+ *
+ *  FIX 4 — auth state parsed once per vendor, not per context
+ *    BEFORE: storageState: AUTH_STATE (file path) → Playwright re-reads + parses
+ *            user.json on every browser.newContext() call (6000+ times total)
+ *    AFTER:  JSON.parse(fs.readFileSync(AUTH_STATE)) once at vendor start;
+ *            parsed object passed directly to newContext() — zero repeated I/O
+ *    IMPACT: Reduces cumulative heap pressure from repeated object allocation
+ *
+ *  FIX 5 — super-batch pattern removed
+ *    BEFORE: 50-game super-batches + sleep(5000) "cooldown" tried to trigger GC
+ *            V8 GC is non-deterministic; sleep doesn't guarantee collection
+ *    AFTER:  Pure semaphore queue as originally designed — Fixes 1+2 eliminate
+ *            the leak that made cooldowns necessary in the first place
+ *    IMPACT: Cleaner architecture, zero idle time between games
+ *
+ *  FIX 6 — MAX_CONCURRENT_GAMES reduced to match real RAM budget
+ *    BEFORE: 6 workers × 6 games = 36 pages × ~200MB = ~7.2GB (too tight)
+ *    AFTER:  6 workers × 3 games = 18 pages × ~200MB = ~3.6GB (safe headroom)
+ *    IMPACT: Leaves ~28GB for OS + Node heap + Playwright process overhead
  *
  * ── Parallelism at both levels ────────────────────────────────────────────────
  *
@@ -21,18 +46,27 @@
  *  Level 2 (game):   up to MAX_CONCURRENT_GAMES games run per vendor at any moment
  *
  *  Total simultaneous browser pages = workers × MAX_CONCURRENT_GAMES
- *  14 workers × 6 games = 84 pages → ~16.8GB browser memory (safe for 32GB)
+ *  Recommended safe config for 32GB: 6 workers × 3 games = 18 pages → ~3.6GB
  *
- * ── Performance estimate ──────────────────────────────────────────────────────
+ * ── RAM tuning guide ──────────────────────────────────────────────────────────
  *
- *  Original v2 @ batch=3: ~50 min
- *  Improved v2 @ concurrent=6, 7s/game: ~18 min
+ *  Formula: (available_RAM_GB - 4GB OS overhead) / workers / 0.2GB_per_page
+ *  32GB machine: (32-4) / 6 / 0.2 = 23 max, but use 3–4 for real headroom
  *
- * ── Bug fixes ──────────────────────────────────────────────────────────────────
+ *  Workers=6, Games=3 →  18 pages, ~3.6GB  ← recommended (safe)
+ *  Workers=6, Games=4 →  24 pages, ~4.8GB  ← acceptable
+ *  Workers=6, Games=6 →  36 pages, ~7.2GB  ← original (too tight with leaks)
  *
- *  - Pagination infinite loop: pageIndex now increments BEFORE break check
- *  - Empty-page guard added to stop runaway loops on API glitches
- *  - Stagger no longer multiplied linearly (was wasting 2.5s on index 5)
+ * ── Run commands ──────────────────────────────────────────────────────────────
+ *
+ *  All vendors (recommended):
+ *    npx playwright test tests/v2/ --project=chromium --workers=6
+ *
+ *  Single vendor (debugging):
+ *    npx playwright test tests/v2/ --project=chromium -g "v2: Amusnet" --workers=1 --headed
+ *
+ *  View report:
+ *    npx playwright show-report
  */
 
 import { Page, Browser } from '@playwright/test';
@@ -45,47 +79,45 @@ import { getGameList, enterGame, S9Credential, GameInfo } from '../api/s9ApiClie
 /**
  * Maximum number of games to validate simultaneously within a single vendor.
  *
- * Tuning guide (workers=14):
- *   4  → 56 total pages,  ~11.2GB — conservative
- *   6  → 84 total pages,  ~16.8GB — recommended for 32GB (leaves headroom)
- *   8  → 112 total pages, ~22.4GB — aggressive, watch memory
+ * RAM guide (see header for full formula):
+ *   workers=6, games=3 →  18 pages, ~3.6GB  ← recommended for 32GB machines
+ *   workers=6, games=4 →  24 pages, ~4.8GB  ← acceptable
+ *   workers=6, games=6 →  36 pages, ~7.2GB  ← previous value, caused OOM
  *
- * Unlike the old GAMES_PER_BATCH, this is a true concurrency cap — games
- * start as soon as a slot is free, not locked to fixed batch boundaries.
+ * Unlike a batch size, this is a true concurrency cap — a new game starts the
+ * instant any slot frees up, regardless of what other games are doing.
  */
-const MAX_CONCURRENT_GAMES = 6;
+const MAX_CONCURRENT_GAMES = 3;
 
 /**
  * How many times to retry a failed game before recording it as Fail.
  *
- * A retry is only attempted for transient failures (Gate 1 API errors,
- * Gate 2 connection failures, Gate 3/4 intermittent errors).
- * AUTH_FAILURE always skips retries — re-auth is needed in that case.
+ * AUTH_FAILURE always skips retries — re-run auth setup in that case.
+ * Each retry uses a fresh browser context and happens OUTSIDE the semaphore slot
+ * (Fix 3) so the slot is not held idle during the cooldown delay.
  *
  *   0  = no retry (fastest, but flaky servers cause false failures)
- *   1  = one retry (recommended — handles most transient server issues)
- *   2  = two retries (for very unstable environments)
+ *   1  = one retry (recommended for most environments)
+ *   2  = two retries (for very unstable server environments)
  */
 const MAX_RETRIES = 2;
 
 /**
  * Milliseconds to wait before retrying a failed game.
- * Gives the game server time to recover from a transient error.
- * 3000ms = 3s cooldown between attempts.
+ * This delay now happens OUTSIDE the semaphore slot so no concurrency is wasted.
  */
 const RETRY_DELAY_MS = 3000;
 
 /**
- * Milliseconds to wait before the very first game starts (index 0).
- * Prevents a cold-start burst where 6 games all call enterGame() simultaneously
- * before the API connection pool has warmed up.
- * Game 0 waits this long; subsequent games wait STAGGER_MS × their index (up to cap).
+ * Milliseconds to wait before the very first game starts.
+ * Prevents a cold-start burst where all slots call enterGame() simultaneously.
  */
 const INITIAL_WARMUP_MS = 500;
 
 /**
- * Milliseconds to stagger between starting each concurrent game.
- * Prevents a spike of simultaneous game/enter API calls at startup.
+ * Milliseconds to stagger between starting each initial concurrent game.
+ * Games beyond the first MAX_CONCURRENT_GAMES queue behind the semaphore
+ * naturally, so stagger only applies to the first wave.
  */
 const STAGGER_MS = 200;
 
@@ -93,7 +125,7 @@ const STAGGER_MS = 200;
 const AUTH_STATE = path.resolve(__dirname, '..', '..', 'playwright', '.auth', 'user.json');
 
 /** Absolute path to the API credential file saved by auth.setup.ts. */
-const CRED_FILE  = path.resolve(__dirname, '..', '..', 'playwright', '.auth', 'credential.json');
+const CRED_FILE = path.resolve(__dirname, '..', '..', 'playwright', '.auth', 'credential.json');
 
 /**
  * Directory where per-vendor CSV result files are saved.
@@ -104,13 +136,13 @@ const REPORTS_DIR = path.resolve(__dirname, '..', '..', 'test-results', 'vendor-
 // ── Gate timing constants ──────────────────────────────────────────────────────
 
 /** ms to wait after iframe loads before scanning for error text (Gate 3) */
-const GATE3_SETTLE_MS    = 2000;
+const GATE3_SETTLE_MS = 2000;
 
 /** Total ms to watch for late-appearing errors (Gate 4) */
-const GATE4_DURATION_MS  = 5000;
+const GATE4_DURATION_MS = 5000;
 
 /** Poll interval inside Gate 4 stability watch */
-const GATE4_INTERVAL_MS  = 2000;
+const GATE4_INTERVAL_MS = 2000;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -139,8 +171,6 @@ const ERROR_TEXT_PATTERN =
  *
  * Unlike Promise.all(chunks), this allows a new game to start the INSTANT
  * any game finishes, rather than waiting for an entire batch to complete.
- *
- * No external dependencies — works in Node.js/Playwright out of the box.
  */
 class Semaphore {
     private running = 0;
@@ -181,6 +211,24 @@ function loadCredential(): S9Credential {
     return JSON.parse(fs.readFileSync(CRED_FILE, 'utf8')) as S9Credential;
 }
 
+/**
+ * FIX 4: Parse auth state once per vendor worker instead of on every newContext().
+ *
+ * Playwright accepts either a file path string OR a pre-parsed StorageState object
+ * for the storageState option. Reading from disk 6000+ times across all games
+ * causes cumulative heap pressure from repeated JSON parsing + object allocation.
+ * Parsing once and reusing the same object eliminates this entirely.
+ */
+function loadAuthState(): object {
+    if (!fs.existsSync(AUTH_STATE)) {
+        throw new Error(
+            `user.json not found at ${AUTH_STATE}.\n` +
+            `Run auth setup: npx playwright test --project=setup`
+        );
+    }
+    return JSON.parse(fs.readFileSync(AUTH_STATE, 'utf8'));
+}
+
 // ── Main exported flow ────────────────────────────────────────────────────────
 
 /**
@@ -195,23 +243,27 @@ export async function apiValidateVendorGamesFlowV2(
     vendorId: number,
     vendorName: string
 ): Promise<void> {
-    // const credential = loadCredential();
-    // console.log(`\n=== [${vendorName}] v2 validation starting (ven_id=${vendorId}, concurrent=${MAX_CONCURRENT_GAMES}) ===`);
+    const credential = loadCredential();
 
-    // // ── Step 1: Fetch all games via API ──────────────────────────────────────
-    // let games: GameInfo[];
-    // try {
-    //     games = await getGameList(credential, vendorId);
-    // } catch (e: any) {
-    //     console.error(`[${vendorName}] Failed to fetch game list: ${e.message}`);
-    //     return;
-    // }
+    // FIX 4: Parse auth state object once — reused across all newContext() calls
+    const authState = loadAuthState();
 
-    // if (games.length === 0) {
-    //     console.warn(`[${vendorName}] No active games found.`);
-    //     return;
-    // }
-    // console.log(`[${vendorName}] ${games.length} games to test (max ${MAX_CONCURRENT_GAMES} concurrent).`);
+    console.log(`\n=== [${vendorName}] v2 validation starting (ven_id=${vendorId}, concurrent=${MAX_CONCURRENT_GAMES}) ===`);
+
+    // ── Step 1: Fetch all games via API ──────────────────────────────────────
+    let games: GameInfo[];
+    try {
+        games = await getGameList(credential, vendorId);
+    } catch (e: any) {
+        console.error(`[${vendorName}] Failed to fetch game list: ${e.message}`);
+        return;
+    }
+
+    if (games.length === 0) {
+        console.warn(`[${vendorName}] No active games found.`);
+        return;
+    }
+    console.log(`[${vendorName}] ${games.length} games to test (max ${MAX_CONCURRENT_GAMES} concurrent).`);
 
     // ── Step 2: Run all games through a semaphore-based concurrent queue ──────
     //
@@ -219,139 +271,115 @@ export async function apiValidateVendorGamesFlowV2(
     // before creating a browser context, and releases it immediately after
     // context.close() — so the next queued game starts the instant a slot opens.
     //
-    // This eliminates the inter-batch idle time of the old fixed-batch model.
-    // const results: GameResult[] = new Array(games.length); // pre-sized for ordering
-    // const semaphore = new Semaphore(MAX_CONCURRENT_GAMES);
+    // FIX 3: Retry delay happens OUTSIDE the semaphore slot. When a game fails
+    // and needs a retry, the slot is released first, then the delay runs, then
+    // a new slot is acquired for the retry attempt. This means the concurrency
+    // cap is never exceeded during retry cooldowns.
+    const results: GameResult[] = new Array(games.length);
+    const semaphore = new Semaphore(MAX_CONCURRENT_GAMES);
 
-    // await Promise.all(
-    //     games.map(async (game, globalIndex) => {
-    //         // ── Startup stagger ───────────────────────────────────────────────
-    //         // Game 0 gets a warmup delay to prevent a cold-start API burst.
-    //         // Games 1–5 get incremental stagger. Games 6+ wait only STAGGER_MS
-    //         // (they queue behind the semaphore anyway, so extra stagger is wasteful).
-    //         const staggerMs = globalIndex === 0
-    //             ? INITIAL_WARMUP_MS
-    //             : Math.min(globalIndex, MAX_CONCURRENT_GAMES - 1) * STAGGER_MS;
-    //         if (staggerMs > 0) await sleep(staggerMs);
+    await Promise.all(
+        games.map(async (game, globalIndex) => {
+            // ── Startup stagger ───────────────────────────────────────────────
+            // Game 0 gets a warmup delay to prevent a cold-start API burst.
+            // Games 1–(MAX_CONCURRENT_GAMES-1) get incremental stagger.
+            // Games beyond that queue behind the semaphore naturally.
+            const staggerMs = globalIndex === 0
+                ? INITIAL_WARMUP_MS
+                : Math.min(globalIndex, MAX_CONCURRENT_GAMES - 1) * STAGGER_MS;
+            if (staggerMs > 0) await sleep(staggerMs);
 
-    //         // Block until a concurrency slot is available
-    //         await semaphore.acquire();
+            const slotLabel = `[${vendorName}][${globalIndex + 1}/${games.length}]`;
+            let finalResult: GameResult | null = null;
 
-    //         const slotLabel = `[${vendorName}][${globalIndex + 1}/${games.length}]`;
-    //         console.log(`${slotLabel} Starting: ${game.name}`);
+            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+                // FIX 3: Retry delay runs BEFORE re-acquiring the slot.
+                // The previous slot was already released at the end of the last attempt.
+                if (attempt > 0) {
+                    console.log(`${slotLabel} ↻ Retry ${attempt}/${MAX_RETRIES} for: ${game.name} (waiting ${RETRY_DELAY_MS}ms)`);
+                    await sleep(RETRY_DELAY_MS);
+                }
 
-    //         let finalResult: GameResult | null = null;
-
-    //         // ── Retry loop ────────────────────────────────────────────────────
-    //         // Each attempt gets a fresh browser context. The retry loop runs
-    //         // entirely INSIDE the semaphore slot, so no extra concurrency slots
-    //         // are consumed while waiting between retries.
-    //         for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    //             if (attempt > 0) {
-    //                 console.log(`${slotLabel} ↻ Retry ${attempt}/${MAX_RETRIES} for: ${game.name} (waiting ${RETRY_DELAY_MS}ms)`);
-    //                 await sleep(RETRY_DELAY_MS);
-    //             }
-
-    //             const context = await browser.newContext({
-    //                 storageState: AUTH_STATE,
-    //                 ignoreHTTPSErrors: true,
-    //             });
-
-    //             try {
-    //                 const gamePage: Page = await context.newPage();
-    //                 const result = await validateSingleGame(gamePage, credential, game, vendorId);
-    //                 result.retries = attempt;
-
-    //                 if (result.status === 'Pass') {
-    //                     // ✅ Passed — stop retrying
-    //                     finalResult = result;
-    //                     if (attempt > 0) {
-    //                         console.log(`${slotLabel} ✅ Passed on retry ${attempt}: ${game.name}`);
-    //                     }
-    //                     break;
-    //                 }
-
-    //                 // ❌ Failed — check if we should retry
-    //                 const isAuthFailure = result.errorLabel.startsWith('AUTH_FAILURE');
-    //                 if (isAuthFailure || attempt >= MAX_RETRIES) {
-    //                     // Auth failures never retry. Last attempt: record the failure.
-    //                     finalResult = result;
-    //                     break;
-    //                 }
-
-    //                 // Will retry — record this attempt's error for logging
-    //                 console.log(`${slotLabel} ✗ Attempt ${attempt + 1} failed | Gate ${result.gate}: ${result.errorLabel}`);
-    //                 finalResult = result; // carry forward in case next attempt also fails
-
-    //             } catch (e: any) {
-    //                 const errorResult: GameResult = {
-    //                     gameId: game.game_id,
-    //                     gameName: game.name,
-    //                     status: 'Fail',
-    //                     gate: 2,
-    //                     errorLabel: `Unexpected error: ${e.message.slice(0, 60)}`,
-    //                     retries: attempt,
-    //                 };
-    //                 if (attempt >= MAX_RETRIES) {
-    //                     finalResult = errorResult;
-    //                     break;
-    //                 }
-    //                 console.log(`${slotLabel} ✗ Attempt ${attempt + 1} threw: ${e.message.slice(0, 60)}`);
-    //                 finalResult = errorResult;
-    //             } finally {
-    //                 await context.close().catch(() => {});
-    //             }
-    //         }
-
-    //         results[globalIndex] = finalResult ?? {
-    //             gameId: game.game_id,
-    //             gameName: game.name,
-    //             status: 'Fail',
-    //             gate: 0,
-    //             errorLabel: 'No result recorded (internal error)',
-    //             retries: MAX_RETRIES,
-    //         };
-
-    //         const r = results[globalIndex];
-    //         const retryNote = r.retries > 0 ? ` [retried ${r.retries}×]` : '';
-    //         const detail = r.status === 'Fail' ? ` | Gate ${r.gate}: ${r.errorLabel}` : '';
-    //         console.log(`${slotLabel} → ${r.status}${retryNote}${detail}`);
-
-    //         semaphore.release();
-    //     })
-    // );
-
-    const credential = loadCredential();
-    const games = await getGameList(credential, vendorId);
-    
-    // Split games into larger "Super-Batches" to allow system cooldown
-    const SUPER_BATCH_SIZE = 50; 
-    const results: GameResult[] = [];
-
-    for (let i = 0; i < games.length; i += SUPER_BATCH_SIZE) {
-        const chunk = games.slice(i, i + SUPER_BATCH_SIZE);
-        const semaphore = new Semaphore(MAX_CONCURRENT_GAMES);
-
-        await Promise.all(
-            chunk.map(async (game, index) => {
+                // Acquire slot — blocks until a concurrency slot is available
                 await semaphore.acquire();
+
+                if (attempt === 0) {
+                    console.log(`${slotLabel} Starting: ${game.name}`);
+                }
+
                 try {
-                    // Existing validation logic...
-                    const result = await runWithRetry(browser, game, vendorId, credential);
-                    results.push(result);
+                    const context = await browser.newContext({
+                        // FIX 4: Pass pre-parsed object, not file path string
+                        storageState: authState as any,
+                        ignoreHTTPSErrors: true,
+                    });
+
+                    try {
+                        const page = await context.newPage();
+                        const result = await validateSingleGame(page, credential, game, vendorId);
+                        result.retries = attempt;
+
+                        if (result.status === 'Pass') {
+                            finalResult = result;
+                            if (attempt > 0) {
+                                console.log(`${slotLabel} ✅ Passed on retry ${attempt}: ${game.name}`);
+                            }
+                        } else {
+                            const isAuthFailure = result.errorLabel.startsWith('AUTH_FAILURE');
+                            if (isAuthFailure || attempt >= MAX_RETRIES) {
+                                // Never retry auth failures. On last attempt, record failure.
+                                finalResult = result;
+                            } else {
+                                // Will retry — log this attempt's error
+                                console.log(`${slotLabel} ✗ Attempt ${attempt + 1} failed | Gate ${result.gate}: ${result.errorLabel}`);
+                                finalResult = result; // carry forward in case next attempt also fails
+                            }
+                        }
+                    } finally {
+                        // Context always closed — even if validateSingleGame throws
+                        await context.close().catch(() => {});
+                    }
+                } catch (e: any) {
+                    finalResult = {
+                        gameId: game.game_id,
+                        gameName: game.name,
+                        status: 'Fail',
+                        gate: 2,
+                        errorLabel: `Unexpected error: ${e.message.slice(0, 60)}`,
+                        retries: attempt,
+                    };
                 } finally {
+                    // FIX 3: Release slot immediately after context is closed.
+                    // The retry delay (if needed) runs AFTER this release, so the
+                    // slot is free for another game during the cooldown period.
                     semaphore.release();
                 }
-            })
-        );
 
-        // SYSTEM COOLDOWN: Give the OS/Node.js time to reclaim memory 
-        // after every 50 games to prevent cumulative slowdown.
-        if (i + SUPER_BATCH_SIZE < games.length) {
-            console.log(`[${vendorName}] Reached Super-Batch limit. Cooling down for 5s...`);
-            await sleep(5000);
-        }
-    }
+                // If we have a final result (pass, auth failure, or last attempt), stop
+                if (
+                    finalResult?.status === 'Pass' ||
+                    finalResult?.errorLabel.startsWith('AUTH_FAILURE') ||
+                    attempt >= MAX_RETRIES
+                ) {
+                    break;
+                }
+            }
+
+            results[globalIndex] = finalResult ?? {
+                gameId: game.game_id,
+                gameName: game.name,
+                status: 'Fail',
+                gate: 0,
+                errorLabel: 'No result recorded (internal error)',
+                retries: MAX_RETRIES,
+            };
+
+            const r = results[globalIndex];
+            const retryNote = r.retries > 0 ? ` [retried ${r.retries}×]` : '';
+            const detail = r.status === 'Fail' ? ` | Gate ${r.gate}: ${r.errorLabel}` : '';
+            console.log(`${slotLabel} → ${r.status}${retryNote}${detail}`);
+        })
+    );
 
     // ── Step 3: Print console summary table ──────────────────────────────────
     const passed  = results.filter(r => r.status === 'Pass').length;
@@ -369,6 +397,7 @@ export async function apiValidateVendorGamesFlowV2(
     // ── Step 4: Save CSV report ────────────────────────────────────────────────
     try {
         fs.mkdirSync(REPORTS_DIR, { recursive: true });
+
         const safeName = vendorName.replace(/[^a-zA-Z0-9_-]/g, '_');
         const csvPath = path.join(REPORTS_DIR, `${safeName}_${timestamp}.csv`);
 
@@ -401,12 +430,17 @@ export async function apiValidateVendorGamesFlowV2(
 /**
  * Validates one game through the 4-gate system.
  *
- * Gate timing (improved vs original):
- *   Gate 1: API entry          — ~200ms  (unchanged)
- *   Gate 2: iframe load        — 20s max (unchanged)
- *   Gate 3: settle + scan      — 2s      (was 3s, saves 1s)
- *   Gate 4: stability watch    — 5s      (was 8s, saves 3s)
- *   Total minimum per game     — ~7s     (was 11s, 36% faster)
+ * Gate timing:
+ *   Gate 1: API entry          — ~200ms
+ *   Gate 2: iframe load        — ≤20s max
+ *   Gate 3: settle + scan      — 2s
+ *   Gate 4: stability watch    — 5s
+ *   Minimum per game           — ~7s
+ *
+ * Memory safety:
+ *   - page.route() is always unrouted in a finally block (Fix 1)
+ *   - page.on('response') listener is always removed in a finally block (Fix 2)
+ *   - The page itself is closed by the caller (context.close() in runWithRetry)
  */
 async function validateSingleGame(
     page: Page,
@@ -440,55 +474,75 @@ async function validateSingleGame(
 
     // ── Gate 2: iframe Load via HTTPS parent (route intercept) ────────────────
     //
-    // page.route() intercepts the s9.com URL and returns an instant stub HTML page.
-    // This gives us:  (1) HTTPS parent URL — satisfies providers checking window.parent.location.protocol
-    //                 (2) document.body — available immediately for iframe injection
+    // page.route() intercepts https://s9.com/** and serves an instant stub page.
+    // This gives us an HTTPS parent URL without hitting the live s9.com server.
     //
-    // No real s9.com server request is made — sub-11s setup instead of 5–20s.
+    // FIX 1: The route is now ALWAYS unrouted in a finally block.
+    //         Previously, exceptions caused early returns that skipped unroute,
+    //         leaving Chromium holding route state for the lifetime of the process.
+    //
+    // FIX 2: The response listener is now ALWAYS removed in a finally block.
+    //         Previously, page.off() was only called on the happy path.
     let iframeLoaded = false;
     let iframeHttpError: number | null = null;
 
+    const routeUrl = 'https://s9.com/**';
+
+    // Define handler refs so they can be removed in finally
+    const routeHandler = (route: any) => {
+        route.fulfill({
+            status: 200,
+            contentType: 'text/html',
+            body: '<!DOCTYPE html><html><head><style>*{margin:0;padding:0}html,body{width:100%;height:100%;overflow:hidden}</style></head><body></body></html>',
+        });
+    };
+
+    const responseHandler = (res: any) => {
+        if (res.url() === redirectUrl && res.status() >= 400) {
+            iframeHttpError = res.status();
+        }
+    };
+
+    // FIX 2: Attach listener before try so finally can always remove it
+    page.on('response', responseHandler);
+
     try {
-        const errorHandler = (res: any) => {
-            if (res.url() === redirectUrl && res.status() >= 400) {
-                iframeHttpError = res.status();
-            }
-        };
-        page.on('response', errorHandler);
+        // FIX 1: Register route
+        await page.route(routeUrl, routeHandler);
 
-        await page.route('https://s9.com/**', (route) => {
-            route.fulfill({
-                status: 200,
-                contentType: 'text/html',
-                body: '<!DOCTYPE html><html><head><style>*{margin:0;padding:0}html,body{width:100%;height:100%;overflow:hidden}</style></head><body></body></html>',
+        try {
+            await page.goto(`https://s9.com/games?ven_id=${vendorId}`, {
+                waitUntil: 'domcontentloaded',
+                timeout: 5000,
             });
-        });
 
-        await page.goto(`https://s9.com/games?ven_id=${vendorId}`, {
-            waitUntil: 'domcontentloaded',
-            timeout: 5000,
-        });
+            await page.evaluate((src: string) => {
+                document.body.innerHTML = `
+                    <iframe
+                        id="gameframe"
+                        src="${src}"
+                        style="width:100vw;height:100vh;border:none;display:block"
+                        allowfullscreen
+                        allow="autoplay; fullscreen; camera; microphone; accelerometer; gyroscope"
+                    ></iframe>`;
+            }, redirectUrl);
 
-        await page.evaluate((src: string) => {
-            document.body.innerHTML = `
-                <iframe
-                    id="gameframe"
-                    src="${src}"
-                    style="width:100vw;height:100vh;border:none;display:block"
-                    allowfullscreen
-                    allow="autoplay; fullscreen; camera; microphone; accelerometer; gyroscope"
-                ></iframe>`;
-        }, redirectUrl);
+            iframeLoaded = await page.frameLocator('#gameframe')
+                .locator('body')
+                .waitFor({ state: 'attached', timeout: 20000 })
+                .then(() => true)
+                .catch(() => false);
 
-        iframeLoaded = await page.frameLocator('#gameframe')
-            .locator('body')
-            .waitFor({ state: 'attached', timeout: 20000 })
-            .then(() => true)
-            .catch(() => false);
+        } finally {
+            // FIX 1: Always unroute — prevents Chromium route state accumulation
+            await page.unroute(routeUrl).catch(() => {});
+        }
 
-        page.off('response', errorHandler);
     } catch (e: any) {
         return fail(2, `Connection Failed: ${e.message.slice(0, 80)}`);
+    } finally {
+        // FIX 2: Always remove response listener — prevents closure-held memory leak
+        page.off('response', responseHandler);
     }
 
     if (!iframeLoaded) {
@@ -534,51 +588,4 @@ async function detectErrorText(page: Page): Promise<string | null> {
 
 function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-/**
- * Helper to handle the browser context lifecycle and retries for a single game.
- * This ensures that even if one game crashes, the context is closed properly.
- */
-async function runWithRetry(
-    browser: Browser,
-    game: GameInfo,
-    vendorId: number,
-    credential: S9Credential
-): Promise<GameResult> {
-    let finalResult: GameResult | null = null;
-
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-        if (attempt > 0) await sleep(RETRY_DELAY_MS);
-
-        const context = await browser.newContext({
-            storageState: AUTH_STATE,
-            ignoreHTTPSErrors: true,
-        });
-
-        try {
-            const page = await context.newPage();
-            const result = await validateSingleGame(page, credential, game, vendorId);
-            result.retries = attempt;
-
-            if (result.status === 'Pass' || result.errorLabel.startsWith('AUTH_FAILURE')) {
-                finalResult = result;
-                break; 
-            }
-            finalResult = result;
-        } catch (e: any) {
-            finalResult = {
-                gameId: game.game_id,
-                gameName: game.name,
-                status: 'Fail',
-                gate: 2,
-                errorLabel: `Unexpected: ${e.message.slice(0, 50)}`,
-                retries: attempt,
-            };
-        } finally {
-            await context.close().catch(() => {});
-        }
-    }
-    return finalResult!;
 }
