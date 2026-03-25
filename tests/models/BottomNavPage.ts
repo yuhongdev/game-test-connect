@@ -14,14 +14,13 @@ export class BottomNavPage {
     constructor(page: Page) {
         this.page = page;
 
-        // Bottom navigation bar — select by text within the bottom nav region
-        const nav = page.locator('[class*="tabbar"], [class*="bottom-nav"], [class*="footer-nav"]').first();
-
-        this.homeTab       = nav.getByText(/^home$/i);
-        this.depositTab    = nav.getByText(/^deposit$/i);
-        this.promotionsTab = nav.getByText(/promo/i);
-        this.referralTab   = nav.getByText(/referral|agency/i);
-        this.profileTab    = nav.getByText(/profile|me$/i);
+        // Bottom nav items are plain generic divs — each contains an img with alt text and a text label.
+        // We locate by the img alt for Home/Deposit (which have alt attrs) and by text for others.
+        this.homeTab       = page.getByRole('img', { name: 'Home' });
+        this.depositTab    = page.getByRole('img', { name: 'Deposit' }).first();
+        this.promotionsTab = page.getByText('Promotions', { exact: true }).last();
+        this.referralTab   = page.getByText('Referral', { exact: true }).last();
+        this.profileTab    = page.getByText('Profile', { exact: true }).last();
     }
 
     async navigateTo(section: NavSection) {

@@ -1,6 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
 import 'dotenv/config';
+
+// Build a datetime stamp once per run: YYYY-MM-DD_HH-MM-SS
+const runStamp = new Date()
+    .toISOString()
+    .replace('T', '_')
+    .replace(/:/g, '-')
+    .slice(0, 19); // "2026-03-25_13-44-00"
+
+// All e2e UI test artifacts go into their own timestamped subfolder
+// so they never overwrite results from other test flows.
+const uiOutputDir = path.join('test-results', 'e2e-ui', runStamp);
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -20,6 +32,11 @@ export default defineConfig({
    */
   globalSetup: path.resolve(__dirname, 'tests', 'globalSetup.ts'),
   testDir: './tests',
+  /**
+   * Isolate e2e UI artifacts into test-results/e2e-ui/<YYYY-MM-DD_HH-MM-SS>/
+   * so each run gets its own folder and other test flows are unaffected.
+   */
+  outputDir: uiOutputDir,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

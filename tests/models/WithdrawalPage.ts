@@ -38,7 +38,10 @@ export class WithdrawalPage {
         this.networkDropdown   = page.locator('[class*="network"]').first();
         this.addressDropdown   = page.locator('[class*="address"]').first();
         this.amountInput       = page.getByPlaceholder(/amount|enter.*amount/i);
-        this.fundPasswordField = page.locator('[class*="fund-password"], [class*="fundpassword"], [class*="pin"]').first();
+        this.fundPasswordField = page.locator('[class*="fund-password"]')
+            .or(page.locator('[class*="fundpassword"]'))
+            .or(page.locator('[class*="pin-input"], [class*="pin"]').first())
+            .first();
         this.withdrawButton    = page.getByRole('button', { name: /^withdraw$/i });
 
         // Info panel

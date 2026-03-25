@@ -13,7 +13,11 @@ export class ChatPage {
 
         this.messageList  = page.locator('[class*="chat-list"], [class*="message-list"]').first();
         this.messageItems = page.locator('[class*="message-item"], [class*="chat-item"]');
-        this.textInput    = page.getByRole('textbox').filter({ hasText: '' }).last();
+        // Use placeholder-based selector first; fall back to the last textbox (chat input is usually at the bottom)
+        this.textInput    = page.getByPlaceholder(/message|chat|say/i)
+            .or(page.locator('[class*="chat"] input[type="text"], [class*="chat"] textarea'))
+            .or(page.getByRole('textbox').last())
+            .first();
         this.sendButton   = page.getByRole('button', { name: /send/i });
     }
 

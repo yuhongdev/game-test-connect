@@ -21,9 +21,101 @@ Automated testing suite that validates all game vendors and their games on s9.co
 | **View Playwright HTML report** | `npx playwright show-report` |
 | **v2 all vendors (previous)** | `npx playwright test tests/v2/ --project=chromium --workers=6` |
 | **v1 single vendor (legacy)** | `npx playwright test tests/s9_test.spec.ts --project=chromium -g "API Validate: Amusnet"` |
+| | |
+| **UI E2E — all suites** | `npx playwright test tests/e2e/ --project=chromium` |
+| **UI E2E — single suite** | `npx playwright test tests/e2e/home.spec.ts --project=chromium` |
+| **UI E2E — headed (debug)** | `npx playwright test tests/e2e/home.spec.ts --project=chromium --headed` |
 
 > ⚠️ **Always include `--project=chromium`** when running single vendor tests.
 > Without it, Playwright runs through all 3 browser projects (chromium + firefox + webkit) = 3× runs.
+
+---
+
+## UI E2E Test Suite
+
+A **Page Object Model (POM)** based browser automation suite that tests the s9.com frontend directly — login, home dashboard, deposit, withdrawal, profile, promotions, referral, and more.
+
+### Test Suites
+
+| Spec file | Test IDs | What it covers |
+|---|---|---|
+| `auth.spec.ts` | TC-AUTH-* | Login, logout, session persistence |
+| `home.spec.ts` | TC-HOME-* | Dashboard elements, game tabs, chatroom, scoreboard, notifications |
+| `deposit.spec.ts` | TC-DEP-* | Deposit form, payment methods |
+| `withdrawal.spec.ts` | TC-WD-* | Withdrawal form, fund password keyboard |
+| `profile.spec.ts` | TC-PROF-* | Profile page fields, avatar, personal info |
+| `promotions.spec.ts` | TC-PROMO-* | Promotion list, banner visibility |
+| `referral.spec.ts` | TC-REF-* | Referral page, invite link |
+| `notifications.spec.ts` | TC-NOTIF-* | Notification panel, read/unread state |
+| `bet-history.spec.ts` | TC-BET-* | Bet history table, filters |
+| `transactions.spec.ts` | TC-TXN-* | Transaction history |
+| `chat.spec.ts` | TC-CHAT-* | Chatroom widget, message input |
+| `navigation.spec.ts` | TC-NAV-* | Bottom navigation, page routing |
+
+### Page Object Models
+
+| Model | Covers |
+|---|---|
+| `LoginPage.ts` | Login form, submit, avatar detection |
+| `HomePage.ts` | Banner, chatroom, game tabs, quick links (Scoreboard, Live Broadcast), sidebar wallet |
+| `BottomNavPage.ts` | Bottom nav tabs (Home, Deposit, Promotions, Referral, Profile) |
+| `DepositPage.ts` | Deposit form and payment method selector |
+| `WithdrawalPage.ts` | Withdrawal form and fund password keyboard |
+| `FundPasswordPage.ts` | Randomized PIN keyboard interaction |
+| `ProfilePage.ts` | Profile fields, avatar, settings |
+| `PromotionsPage.ts` | Promotion cards and banner |
+| `ReferralPage.ts` | Referral link and stats |
+| `NotificationsPage.ts` | Notification list and state |
+| `BetHistoryPage.ts` | Bet history table and filters |
+| `TransactionPage.ts` | Transaction list |
+| `ChatPage.ts` | Chat widget and input |
+
+### Running UI E2E Tests
+
+```bash
+# Auth setup (required once per session)
+npx playwright test --project=setup
+
+# All UI suites
+npx playwright test tests/e2e/ --project=chromium
+
+# Single suite
+npx playwright test tests/e2e/home.spec.ts --project=chromium
+
+# Single test by ID
+npx playwright test tests/e2e/home.spec.ts --project=chromium -g "TC-HOME-001"
+
+# Headed mode (see the browser)
+npx playwright test tests/e2e/home.spec.ts --project=chromium --headed
+```
+
+### Test Results Output
+
+Each UI E2E run writes artifacts to an **isolated datetime-scoped subfolder** so results from different test flows are never overwritten:
+
+```
+test-results/
+├── e2e-ui/
+│   ├── 2026-03-25_13-44-00/    ← run from 25 Mar 13:44
+│   │   ├── e2e-home-Home-Page-TC-HOME-001-chromium/
+│   │   │   ├── error-context.md   (ARIA snapshot on failure)
+│   │   │   └── screenshot.png
+│   │   └── ...
+│   └── 2026-03-26_09-00-00/    ← next run
+└── vendor-reports/              ← game vendor validation (separate)
+```
+
+### Known UI Behaviours (handled automatically)
+
+| Behaviour | How it's handled |
+|---|---|
+| **Login/logout success overlay** | Non-clickable, auto-dismisses in ~2 s — `dismissOverlays()` waits for it to disappear |
+| **Developer push reload alert** | Browser-level `confirm()` — accepted via `page.once('dialog', ...)` inside `goto()` |
+| **Notification overlay** | Full-screen, auto-dismisses — same `dismissOverlays()` wait |
+| **Announcement/promo modal** | Clickable close button — `dismissAnnouncementModal()` closes it if present |
+| **Sidebar wallet buttons** | Deposit/Withdrawal are inside a hidden drawer — `openSidebar()` reveals them |
+| **"Under construction" toast** | Transient auto-dismiss — asserted immediately after click |
+| **Persistent WebSocket (chatroom)** | `networkidle` never resolves — `goto()` uses `'load'` state + 1 s wait instead |
 
 ---
 
@@ -80,8 +172,24 @@ d:/Yoong testing/
 │   │   ├── apiValidationFlow.ts       # v1 validation logic
 │   │   └── vendorValidationFlow.ts    # Legacy DOM-based (reference only)
 │   └── models/
-│       └── LoginPage.ts
+│       ├── LoginPage.ts
+│       ├── HomePage.ts
+│       ├── BottomNavPage.ts
+│       ├── DepositPage.ts
+│       ├── WithdrawalPage.ts
+│       ├── FundPasswordPage.ts
+│       ├── ProfilePage.ts
+│       ├── PromotionsPage.ts
+│       ├── ReferralPage.ts
+│       ├── NotificationsPage.ts
+│       ├── BetHistoryPage.ts
+│       ├── TransactionPage.ts
+│       └── ChatPage.ts
 ├── test-results/
+│   ├── e2e-ui/                        # ← UI E2E artifacts — one dated folder per run
+│   │   ├── 2026-03-25_13-44-00/       #   run from 25 Mar 13:44
+│   │   │   └── e2e-home-.../          #   per-test failure artifacts
+│   │   └── ...
 │   ├── vendor-reports/                # ← CSV output — one dated folder per run
 │   │   ├── 2026-03-19T08-24-15/       #   run from 19 Mar 08:24
 │   │   │   ├── Amusnet_2026-03-19T08-24-15.csv
@@ -100,7 +208,7 @@ d:/Yoong testing/
 └── README.md
 ```
 
-> **Note:** `test-results/` is wiped by Playwright before every run. The dated run folders inside `vendor-reports/` are also wiped. If you want to keep CSV history across multiple test sessions, copy the dated folders out before re-running, or change `REPORTS_BASE_DIR` in `apiValidationFlowV4.ts` to a path outside `test-results/`.
+> **Note:** UI E2E artifacts land in `test-results/e2e-ui/<datetime>/` and are **not wiped between runs** — each run gets its own folder. Game vendor CSV output in `test-results/vendor-reports/` follows the same pattern. If you want to clear old results, delete the dated subfolders manually.
 
 ---
 
@@ -453,3 +561,265 @@ Key differences you will notice:
 | `diffRuns.ts --latest` — only 1 run found | Need at least two completed runs to diff |
 | CSV history lost between sessions | Playwright wipes `test-results/` on each run — copy dated folders out, or move `REPORTS_BASE_DIR` outside `test-results/` |
 | Games show `FrameDepth = 2` | Normal — those games use a nested iframe; v4 handles them automatically |
+
+---
+
+# s9.com 游戏供应商验证 (中文版)
+
+自动化测试套件，通过基于 **API 优先** 的 Playwright 验证 s9.com 上的所有游戏供应商及其游戏。
+
+---
+
+## ⚡ 快捷命令参考
+
+> **请务必先运行 auth setup。** 在运行任何测试之前，必须先进行身份验证。
+
+| 您的需求 | 命令 |
+|---|---|
+| **首次运行 / 会话过期** | `npx playwright test --project=setup` |
+| **运行所有供应商 (推荐使用 v4)** | `npx playwright test tests/v4/ --project=chromium --workers=6` |
+| **单个供应商 — 无头模式** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet"` |
+| **单个供应商 — 显示浏览器** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet" --workers=1 --headed` |
+| **生成仪表板报告** | `npx ts-node tests/reports/generateReport.ts` |
+| **报告 — 仅限最新运行** | `npx ts-node tests/reports/generateReport.ts --latest` |
+| **比较最近的两次运行** | `npx ts-node tests/reports/diffRuns.ts --latest` |
+| **打开仪表板** | `start test-results\report.html` |
+| **查看 Playwright HTML 报告** | `npx playwright show-report` |
+| **v2 所有供应商 (旧版)** | `npx playwright test tests/v2/ --project=chromium --workers=6` |
+| **v1 单个供应商 (旧版)** | `npx playwright test tests/s9_test.spec.ts --project=chromium -g "API Validate: Amusnet"` |
+| | |
+| **UI E2E — 所有套件** | `npx playwright test tests/e2e/ --project=chromium` |
+| **UI E2E — 单个套件** | `npx playwright test tests/e2e/home.spec.ts --project=chromium` |
+| **UI E2E — 有头模式 (调试)** | `npx playwright test tests/e2e/home.spec.ts --project=chromium --headed` |
+
+> ⚠️ **运行单个供应商测试时，请务必包含 `--project=chromium`**。
+> 否则，Playwright 将运行所有 3 个浏览器项目 (chromium + firefox + webkit) = 运行 3 次。
+
+---
+
+## UI E2E 测试套件
+
+基于**页面对象模型 (POM)** 的浏览器自动化套件，直接测试 s9.com 前端 — 登录、主仪表板、存款、提款、个人资料、促销活动、推荐等。
+
+### 测试套件
+
+| 规范文件 (Spec file) | 测试 ID | 测试范围 |
+|---|---|---|
+| `auth.spec.ts` | TC-AUTH-* | 登录、登出、会话持久性 |
+| `home.spec.ts` | TC-HOME-* | 仪表板元素、游戏选项卡、聊天室、记分板、通知 |
+| `deposit.spec.ts` | TC-DEP-* | 存款表单、付款方式 |
+| `withdrawal.spec.ts` | TC-WD-* | 提款表单、资金密码键盘 |
+| `profile.spec.ts` | TC-PROF-* | 个人资料字段、头像、个人信息 |
+| `promotions.spec.ts` | TC-PROMO-* | 促销列表、横幅可见性 |
+| `referral.spec.ts` | TC-REF-* | 推荐页面、邀请链接 |
+| `notifications.spec.ts` | TC-NOTIF-* | 通知面板、已读/未读状态 |
+| `bet-history.spec.ts` | TC-BET-* | 投注历史表格、过滤器 |
+| `transactions.spec.ts` | TC-TXN-* | 交易历史 |
+| `chat.spec.ts` | TC-CHAT-* | 聊天室小部件、消息输入 |
+| `navigation.spec.ts` | TC-NAV-* | 底部导航、页面路由 |
+
+### 页面对象模型 (POM)
+
+| 模型 | 覆盖范围 |
+|---|---|
+| `LoginPage.ts` | 登录表单、提交、头像检测 |
+| `HomePage.ts` | 横幅、聊天室、游戏选项卡、快速链接 (记分板、直播)、侧边栏钱包 |
+| `BottomNavPage.ts` | 底部导航选项卡 (主页、存款、促销、推荐、个人资料) |
+| `DepositPage.ts` | 存款表单和付款方式选择器 |
+| `WithdrawalPage.ts` | 提款表单和资金密码键盘 |
+| `FundPasswordPage.ts` | 随机 PIN 键盘交互 |
+| `ProfilePage.ts` | 个人资料字段、头像、设置 |
+| `PromotionsPage.ts` | 促销卡片和横幅 |
+| `ReferralPage.ts` | 推荐链接和统计 |
+| `NotificationsPage.ts` | 通知列表和状态 |
+| `BetHistoryPage.ts` | 投注历史表格和过滤器 |
+| `TransactionPage.ts` | 交易列表 |
+| `ChatPage.ts` | 聊天小部件和输入 |
+
+### 运行 UI E2E 测试
+
+```bash
+# Auth 设置 (每个会话需运行一次)
+npx playwright test --project=setup
+
+# 所有 UI 套件
+npx playwright test tests/e2e/ --project=chromium
+
+# 单个套件
+npx playwright test tests/e2e/home.spec.ts --project=chromium
+
+# 按 ID 运行单个测试
+npx playwright test tests/e2e/home.spec.ts --project=chromium -g "TC-HOME-001"
+
+# 有头模式 (显示浏览器)
+npx playwright test tests/e2e/home.spec.ts --project=chromium --headed
+```
+
+### 测试结果输出
+
+每次 UI E2E 运行都会将工件写入**隔离的按日期时间命名的子文件夹**，因此不同测试流程的结果永远不会被覆盖：
+
+```
+test-results/
+├── e2e-ui/
+│   ├── 2026-03-25_13-44-00/    ← 3月25日 13:44 的运行
+│   │   ├── e2e-home-Home-Page-TC-HOME-001-chromium/
+│   │   │   ├── error-context.md   (失败时的 ARIA 快照)
+│   │   │   └── screenshot.png
+│   │   └── ...
+│   └── 2026-03-26_09-00-00/    ← 下一次运行
+└── vendor-reports/              ← 游戏供应商验证 (分开存放)
+```
+
+### 已知的 UI 行为 (自动处理)
+
+| 行为 | 处理方式 |
+|---|---|
+| **登录/登出成功覆盖层** | 不可点击，约 2 秒后自动消失 — `dismissOverlays()` 会等待其消失 |
+| **开发者推送重新加载警报** | 浏览器级别 `confirm()` — 在 `goto()` 内通过 `page.once('dialog', ...)` 接受 |
+| **通知覆盖层** | 全屏，自动消失 — 使用相同的 `dismissOverlays()` 等待 |
+| **公告/促销模态框** | 可点击关闭按钮 — 如果存在，`dismissAnnouncementModal()` 会将其关闭 |
+| **侧边栏钱包按钮** | 存款/提款包含在一个隐藏的抽屉里 — 使用 `openSidebar()` 显示它们 |
+| **“建设中”提示** | 短暂自动消失 — 点击后立即断言 |
+| **持久化的 WebSocket (聊天室)** | `networkidle` 永远不会结束 — 因此 `goto()` 使用 `'load'` 状态 + 1 秒等待 |
+
+---
+
+## 概述
+
+此套件不通过点击网站 UI，而是直接调用 s9.com 后端 API 来：
+1. 自动从 API 获取实时供应商列表 (非硬编码列表)
+2. 立即发现每个供应商的所有游戏 (无需滚动 DOM)
+3. 启动每个游戏会话并接收提供商的重定向 URL
+4. 使用与父页面相同的 HTTPS (通过 `page.route()` 拦截) 将游戏嵌入到 iframe 中
+5. 运行 **4 关卡验证 (4-gate validation)**，将每个游戏分类为 **通过 (Pass)** 或 **失败 (Fail)**
+6. **自动重试** 临时故障 (可配置，默认 2 次重试，间隔 3 秒)
+7. **生成仪表板报告**，包含供应商健康热力图、不稳定游戏检测和 SLA 跟踪
+
+**53 个供应商 · 6,000+ 款游戏 · 并行测试：**
+
+| 版本 | 位置 | 策略 | 预计速度 |
+|---|---|---|---|
+| v1 | `tests/s9_test.spec.ts` | 每个供应商一次 1 个游戏，DOM 滚动 | ~3.5小时 |
+| v2 | `tests/v2/s9_test_v2.spec.ts` | 基于信号量的并发队列，API | ~18 分钟 |
+| v4 ⭐ | `tests/v4/s9_test_v4.spec.ts` | 工作池，嵌套 iframe 检测，包含日期的运行文件夹 | ~25 分钟 @ 6 workers |
+
+---
+
+## 前置条件
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+---
+
+## 项目结构
+(此处与英文版目录结构一致。`#` 后的部分为相关文件的标注说明。)
+
+```
+d:/Yoong testing/
+├── tests/
+│   ├── auth.setup.ts                  # 登录 + 保存 auth 状态，API 凭据及供应商列表
+│   ├── globalSetup.ts                 # 每次运行测试前刷新供应商列表
+│   ├── s9_test.spec.ts                # v1 测试运行器 (顺序执行，旧版)
+│   ├── v2/
+│   │   ├── s9_test_v2.spec.ts         # v2 测试运行器 (信号量队列)
+│   │   └── apiValidationFlowV2.ts     # v2 验证逻辑
+│   ├── v4/
+│   │   ├── s9_test_v4.spec.ts         # v4 测试运行器 (工作池) ⭐
+│   │   └── apiValidationFlowV4.ts     # v4 验证逻辑
+│   ├── reports/
+│   │   ├── generateReport.ts          # 根据所有 CSV 运行数据构建 HTML 仪表板
+│   │   └── diffRuns.ts                # 比较两次运行，展示回归与恢复情况
+│   ├── api/
+│   │   └── s9ApiClient.ts             # 纯 HTTP 客户端 (无浏览器)
+... (其他 UI 及 POM 模型省略，同英文版)
+├── test-results/
+│   ├── e2e-ui/                        # ← UI E2E 产物 — 每次运行生成一个日期文件夹
+│   ├── vendor-reports/                # ← CSV 输出 — 每次运行生成一个日期文件夹
+│   ├── report.html                    # ← 生成的仪表板 (在浏览器中打开)
+│   └── diff.html                      # ← 生成的对比报告
+...
+```
+
+> **注意：** UI E2E 产物保存在 `test-results/e2e-ui/<datetime>/` 中并且**不会在运行之间被擦除** — 每次运行都有自己的文件夹。游戏供应商的 CSV 输出保存在 `test-results/vendor-reports/` 遵循相同模式。如果想清除旧结果，需手动删除相关的日期子文件夹。
+
+---
+
+## 首次设置
+
+### 1. 配置凭据
+在项目根目录创建 `.env` 文件：
+```
+TEST_USER=yoongtestt01
+TEST_PASS=Yoong01!!
+BASE_URL=https://s9.com
+```
+
+### 2. 运行身份验证设置
+登录，捕获 API 令牌，保存浏览器会话 + 供应商列表：
+```bash
+npx playwright test --project=setup
+```
+> **每当会话过期时重新运行** — 令牌过期会在结果中显示为 `AUTH_FAILURE`。
+
+---
+
+## 运行测试
+
+### ⭐ 推荐：v4 — 所有供应商
+
+```bash
+npx playwright test tests/v4/ --project=chromium --workers=6
+```
+
+- 同时测试 6 个供应商 · 每个供应商 3 个游戏 = 18 个浏览器页面 (固定资源上限)
+- 此运行中的所有 53 个供应商 CSV 都会落入一个共享的日期文件夹：`test-results/vendor-reports/2026-03-19T08-24-15/`
+- 工作池架构 — 无论供应商游戏数量多少，内存都保持平稳
+
+### v4 — 单个供应商 (调试)
+
+```bash
+# 无头模式 (快)
+npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet"
+
+# 有头模式 (显示浏览器)
+npx playwright test tests/v4/ --project=chromium -g "v4: PG Soft" --workers=1 --headed
+```
+
+### 查看结果
+
+#### 1. 仪表板报告 (推荐)
+通过命令 `npx ts-node tests/reports/generateReport.ts` (可加 `--latest`) 生成包含游戏通过率、健康情况及 SLA 违规情况的仪表板。
+
+#### 2. 运行差异对比
+通过命令 `npx ts-node tests/reports/diffRuns.ts --latest` 可以比较发现相比上次新增的错误（回归）以及修复好的游戏。
+
+#### 3. Playwright HTML 报告
+可使用 `npx playwright show-report` 浏览控制台日志和截图等。
+
+#### 4. CSV 文件 (在 Excel 内打开)
+`Gate` — 失败的关卡 (1-4)  
+`Retries` — 重试次数  
+`FrameDepth` — 嵌套 iframe 深度
+
+---
+
+## 它是如何工作的 (v4 验证原理)
+
+启动时获取最新的供应商和游戏数据；每个游戏经历的 **4 关卡验证 (4-Gate Validation)** 为：
+1. **Gate 1 — API 接口 (API Entry):** 校验获取游戏 URL 等数据。
+2. **Gate 2 — iframe 加载 (iframe Load):** 检查游戏 iframe 页面有没有 4xx/5xx 下载错误或超时。
+3. **Gate 3 — 立即错误扫描 (Immediate Error Scan):** 扫描明显的游戏报错字符。
+4. **Gate 4 — 稳定性监控 (Stability Watch):** 检查游戏内部一定时间会不会崩溃或白屏。
+
+如游戏具备嵌套套娃 iframe，v4 版可自动捕获进入 (FrameDepth = 2)。只要任何一关失败，系统都会重新开启一个新的独立浏览器上下文，默认**重试 2 次**。
+
+### 常见的排错情况
+- **`AUTH_FAILURE`**: 重新跑 setup 更新 Token。
+- **所有游戏失败于 Gate 2**: 用户状态过期或 IP 问题。
+- **速率受限 (HTTP 429)**: 调低 `MAX_CONCURRENT_GAMES` 或增加队列延迟。
+
+更多配置可在 `apiValidationFlowV4.ts` 与 `generateReport.ts` 中根据注释修改。

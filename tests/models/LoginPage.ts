@@ -26,17 +26,19 @@ export class LoginPage {
     }
 
     async login(username: string, password: string) {
-        console.log('[LoginPage] Taking debug screenshot...');
-        await this.page.screenshot({ path: 'playwright-debug-login.png' });
-        console.log('[LoginPage] Clicking loginButtonTop...');
-        await this.loginButtonTop.click({ timeout: 10000 }).catch(e => {
-            console.error('[LoginPage] loginButtonTop click failed. Page URL:', this.page.url());
-            throw e;
-        });
-        console.log('[LoginPage] Clicking usernameInput...');
+        // Only click the header "Login" button if we are NOT already on the login page.
+        // When tests navigate directly to /login the header button does not exist.
+        const onLoginPage = this.page.url().includes('/login');
+        if (!onLoginPage) {
+            console.log('[LoginPage] Clicking loginButtonTop...');
+            await this.loginButtonTop.click({ timeout: 10000 });
+            // Wait for the login form to appear after navigation
+            await this.usernameInput.waitFor({ state: 'visible', timeout: 10000 });
+        }
+        console.log('[LoginPage] Filling usernameInput...');
         await this.usernameInput.click();
         await this.usernameInput.fill(username);
-        console.log('[LoginPage] Clicking passwordInput...');
+        console.log('[LoginPage] Filling passwordInput...');
         await this.passwordInput.click();
         await this.passwordInput.fill(password);
         console.log('[LoginPage] Clicking loginSubmitButton...');
@@ -46,7 +48,9 @@ export class LoginPage {
 
     async logout() {
         await this.avatarImg.click();
+        await this.signOutButton.waitFor({ state: 'visible', timeout: 8000 });
         await this.signOutButton.click();
+        await this.confirmSignOutButton.waitFor({ state: 'visible', timeout: 8000 });
         await this.confirmSignOutButton.click();
     }
 }
