@@ -22,6 +22,7 @@ import { getVendorList, VendorInfo } from './api/s9ApiClient';
 
 const CRED_FILE    = path.resolve(__dirname, '..', 'playwright', '.auth', 'credential.json');
 const VENDORS_FILE = path.resolve(__dirname, '..', 'playwright', '.auth', 'vendors.json');
+export const RUN_META_FILE = path.resolve(__dirname, '..', 'playwright', '.auth', 'run-meta.json');
 
 /**
  * Vendor IDs to always skip regardless of their API status.
@@ -60,6 +61,11 @@ export default async function globalSetup(): Promise<void> {
     fs.mkdirSync(path.dirname(VENDORS_FILE), { recursive: true });
     fs.writeFileSync(VENDORS_FILE, JSON.stringify(summary, null, 2), 'utf8');
 
+    // Write a shared run timestamp so all workers land CSVs in the same folder.
+    const runTimestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    fs.writeFileSync(RUN_META_FILE, JSON.stringify({ runTimestamp }, null, 2), 'utf8');
+
     console.log(`[globalSetup] ${active.length} active vendors saved to vendors.json`);
     console.log(`[globalSetup] Excluded: ${vendors.length - active.length} vendor(s) via denylist`);
+    console.log(`[globalSetup] Run timestamp: ${runTimestamp}`);
 }

@@ -11,9 +11,12 @@ Automated testing suite that validates all game vendors and their games on s9.co
 | What you want | Command |
 |---|---|
 | **First-time / session expired** | `npx playwright test --project=setup` |
-| **Run all vendors (v4 recommended)** | `npx playwright test tests/v4/ --project=chromium --workers=6` |
-| **Single vendor — headless** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet"` |
-| **Single vendor — visible browser** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet" --workers=1 --headed` |
+| **Run all vendors (v5 recommended)** | `npx playwright test tests/v5/ --project=chromium --workers=10` |
+| **Single vendor — headless (v5)** | `npx playwright test tests/v5/ --project=chromium -g "v5: Amusnet"` |
+| **Single vendor — visible browser (v5)** | `npx playwright test tests/v5/ --project=chromium -g "v5: Amusnet" --workers=1 --headed` |
+| **Run all vendors (v4 stable)** | `npx playwright test tests/v4/ --project=chromium --workers=6` |
+| **Single vendor — headless (v4)** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet"` |
+| **Single vendor — visible browser (v4)** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet" --workers=1 --headed` |
 | **Generate dashboard report** | `npx ts-node tests/reports/generateReport.ts` |
 | **Report — latest run only** | `npx ts-node tests/reports/generateReport.ts --latest` |
 | **Diff two most recent runs** | `npx ts-node tests/reports/diffRuns.ts --latest` |
@@ -136,7 +139,8 @@ Instead of clicking through the website UI, this suite calls the s9.com backend 
 |---|---|---|---|
 | v1 | `tests/s9_test.spec.ts` | 1 game at a time per vendor, DOM scroll | ~3.5h |
 | v2 | `tests/v2/s9_test_v2.spec.ts` | Semaphore-based concurrent queue, API | ~18 min |
-| v4 ⭐ | `tests/v4/s9_test_v4.spec.ts` | Worker pool, nested iframe detection, dated run folders | ~25 min @ 6 workers |
+| v4 | `tests/v4/s9_test_v4.spec.ts` | Worker pool, nested iframe detection, dated run folders | ~100 min @ 6 workers |
+| v5 ⭐ | `tests/v5/s9_test_v5.spec.ts` | Adaptive concurrency, page pool, mobile emulation, dead-letter retries, freeze watchdog | ~50–60 min @ 6 workers |
 
 ---
 
@@ -161,8 +165,11 @@ d:/Yoong testing/
 │   │   ├── s9_test_v2.spec.ts         # v2 test runner (semaphore queue)
 │   │   └── apiValidationFlowV2.ts     # v2 validation logic
 │   ├── v4/
-│   │   ├── s9_test_v4.spec.ts         # v4 test runner (worker pool) ⭐
+│   │   ├── s9_test_v4.spec.ts         # v4 test runner (worker pool)
 │   │   └── apiValidationFlowV4.ts     # v4 validation logic
+│   ├── v5/
+│   │   ├── s9_test_v5.spec.ts         # v5 test runner (adaptive concurrency + page pool) ⭐
+│   │   └── apiValidationFlowV5.ts     # v5 validation logic
 │   ├── reports/
 │   │   ├── generateReport.ts          # Builds HTML dashboard from all CSV runs
 │   │   └── diffRuns.ts                # Diffs two runs, shows regressions & recoveries
@@ -243,7 +250,31 @@ Vendor list saved: 53 active vendors → playwright/.auth/vendors.json
 
 ## Running Tests
 
-### ⭐ Recommended: v4 — all vendors
+### ⭐ Recommended: v5 — all vendors
+
+```bash
+npx playwright test tests/v5/ --project=chromium --workers=12
+```
+
+- **12 workers × 3 slots = 36 pages** — confirmed ⭐ sweet spot on 32 GB RAM (peaks ~22 GB, 69%)
+- Global shared 36-token concurrency pool — last surviving vendor scales up to consume all free slots
+- Page pool per vendor: contexts are recycled between games (no newContext per game)
+- iPhone 14 Pro Max mobile emulation — portrait default, auto-switches to landscape if game requests it
+- Dead-letter retry queue — failed games retried at end, zero mid-run CPU sleep
+- 5-min freeze watchdog — aborts only the frozen worker; siblings continue unaffected
+- All 53 vendor CSVs from this run land in one shared dated folder
+
+### v5 — single vendor (debugging)
+
+```bash
+# Headless (fast)
+npx playwright test tests/v5/ --project=chromium -g "v5: EpicWin"
+
+# Headed (see the browser, confirm mobile emulation)
+npx playwright test tests/v5/ --project=chromium -g "v5: EpicWin" --workers=1 --headed
+```
+
+### v4 — all vendors (stable baseline)
 
 ```bash
 npx playwright test tests/v4/ --project=chromium --workers=6
@@ -349,18 +380,22 @@ test-results/vendor-reports/<run-datetime>/<VendorName>_<run-datetime>.csv
 ```
 
 CSV columns:
-| VendorId | VendorName | GameId | GameName | Status | Gate | Retries | FrameDepth | Error | Timestamp |
+| VendorId | VendorName | GameId | GameName | Status | Gate | Retries | FrameDepth | Orientation | Error | Timestamp |
 
 - **Gate** — which gate failed (1–4), blank for passing games
 - **Retries** — retry attempts used (0 = first try; ≥1 = transient failure)
 - **FrameDepth** — 1 = normal iframe, 2 = nested iframe detected and handled
+- **Orientation** — `portrait` or `landscape` (v5 only — detected adaptively per game)
 - Filter `Status = Fail` in Excel to see all failed games
 - Filter `Retries > 0` in Excel to identify flaky game servers
+- Filter `Orientation = landscape` to identify vendors with landscape-only games (e.g. EpicWin)
 
 Example:
 ```
-600005,"Amusnet",1297,"Dynamic Roulette 120x","Pass",,0,1,"",2026-03-19T08-24-15
-600005,"Amusnet",1298,"Live European Roulette","Fail",3,2,1,"Game Error: An error occurred...","2026-03-19T08-24-15"
+betby_600012_2026-03-25T10-11-15.csv      ← lowercase + vendor ID avoids
+betby_600037_2026-03-25T10-11-15.csv         collision between "Betby" & "BETBY"
+amusnet_600005_2026-03-19T08-24-15.csv
+pg_soft_600021_2026-03-19T08-24-15.csv
 ```
 
 ### 5. Live Console (during v4 run)
@@ -484,29 +519,57 @@ This makes it easy to report on a single run with `--latest`, or diff any two ru
 
 ---
 
-## Tuning (Edit `apiValidationFlowV4.ts`)
+## Vendor Skip Adapter (`vendor-config.json`)
+
+For vendors that require a VPN or have known issues, mark them for skipping in bulk runs by editing `playwright/.auth/vendor-config.json`:
+
+```json
+{
+  "PG Soft": {
+    "skipInBulkRun": true,
+    "reason": "VPN required — games return REGION_RESTRICTED without VPN"
+  },
+  "BETBY": {
+    "skipInBulkRun": true,
+    "reason": "Under maintenance until 2026-04-01"
+  }
+}
+```
+
+- Keys are **case-insensitive** — `"pg soft"` matches vendor named `"PG Soft"` or `"PG SOFT"`
+- Skipped vendors are **logged at startup** with their reason
+- Skipped vendors can still be tested individually: `npx playwright test tests/v5/ --project=chromium -g "v5: PG Soft" --workers=1 --headed`
+- The file is **optional** — if absent, all vendors run normally
+
+---
+
+## Tuning (Edit `apiValidationFlowV5.ts`)
 
 | Constant | Default | Effect |
 |---|---|---|
-| `MAX_CONCURRENT_GAMES` | `3` | Game slots per vendor worker. Hard ceiling on browser pages |
-| `GLOBAL_PAGE_BUDGET` | `20` | Documentation cap: `MAX_CONCURRENT_GAMES = floor(budget / workers)` |
-| `MAX_RETRIES` | `2` | Retry attempts per failed game |
-| `RETRY_DELAY_MS` | `3000` | Cooldown between retries (ms) |
-| `STAGGER_MS` | `200` | Delay between worker cold-starts (ms) |
+| `GLOBAL_PAGE_BUDGET` | `20` | Total browser pages across all workers. `budget × 200 MB ≤ available RAM` |
+| `GAME_TIMEOUT_MS` | `90000` | Per-game hard timeout (ms). Race-kills frozen games immediately |
+| `MAX_RETRIES` | `2` | Retry attempts per failed game (applied in dead-letter pass) |
+| `RETRY_DELAY_MS` | `3000` | Cooldown between retries in dead-letter pass (ms) |
+| `STAGGER_MS` | `200` | Delay between pool-slot cold-starts (ms) |
+| `WATCHDOG_CHECK_MS` | `60000` | How often the freeze watchdog polls (ms) |
+| `WORKER_IDLE_LIMIT_MS` | `300000` | Max idle time before watchdog force-exits frozen worker (ms) |
 | `GATE3_SETTLE_MS` | `2000` | Settle wait before error scan (ms) |
 | `GATE4_DURATION_MS` | `5000` | Stability watch duration (ms) |
 | `NESTED_IFRAME_DETECT_MS` | `1000` | Timeout to probe for nested iframes (ms) |
 
+> For v4 tuning constants, see the equivalent table in `apiValidationFlowV4.ts`.
+
 **`MAX_CONCURRENT_GAMES` guide — formula: `floor(GLOBAL_PAGE_BUDGET / workers)`**
 
-| Workers | Budget | MAX_CONCURRENT_GAMES | Total pages | Peak browser RAM |
-|---|---|---|---|---|
-| 6 | 20 | 3 | 18 | ~3.6 GB |
-| 6 | 24 | 4 | 24 | ~4.8 GB |
-| 8 | 20 | 2 | 16 | ~3.2 GB |
-| 8 | 24 | 3 | 24 | ~4.8 GB |
-| 14 | 20 | 1 | 14 | ~2.8 GB |
-| 14 | 42 | 3 | 42 | ~8.4 GB |
+| Workers | Budget | `perWorkerSlots` | Total pages | Peak browser RAM | Notes |
+|---|---|---|---|---|---|
+| **12** | **36** | **3** | **36** | **~7.2 GB** | **✅ Confirmed sweet spot (32 GB machine)** |
+| 6 | 20 | 3 | 18 | ~3.6 GB | Conservative / low-RAM machines |
+| 6 | 24 | 4 | 24 | ~4.8 GB | |
+| 8 | 24 | 3 | 24 | ~4.8 GB | |
+| 12 | 30 | 2 | 24 | ~4.8 GB | If RAM spikes above 28 GB with budget=36 |
+| 14 | 42 | 3 | 42 | ~8.4 GB | |
 
 **Workers guide** (edit `playwright.config.ts`):
 
@@ -552,7 +615,7 @@ Key differences you will notice:
 | `AUTH_FAILURE` in many games | Re-run auth: `npx playwright test --project=setup` |
 | `credential.json not found` | Run auth setup first |
 | `vendors.json not found` | Run auth setup first |
-| Rate limit errors (HTTP 429) | Reduce `MAX_CONCURRENT_GAMES` or add workers stagger |
+| Rate limit errors (HTTP 429) | Reduce `GLOBAL_PAGE_BUDGET` or add stagger |
 | All games fail at Gate 2 | Check `playwright/.auth/user.json` is fresh (re-run auth) |
 | Game keeps failing after retries | Server-side issue; check that game manually in a browser |
 | Test runs 3× for single vendor | Add `--project=chromium` to your command |
@@ -560,7 +623,13 @@ Key differences you will notice:
 | `generateReport.ts` — no CSV directory | Run the validation tests first, then generate |
 | `diffRuns.ts --latest` — only 1 run found | Need at least two completed runs to diff |
 | CSV history lost between sessions | Playwright wipes `test-results/` on each run — copy dated folders out, or move `REPORTS_BASE_DIR` outside `test-results/` |
-| Games show `FrameDepth = 2` | Normal — those games use a nested iframe; v4 handles them automatically |
+| Games show `FrameDepth = 2` | Normal — those games use a nested iframe; v4/v5 handle them automatically |
+| CQ9 games show 404 blocked | Use v5 — iPhone 14 Pro Max UA bypasses DevTools bot-detection |
+| EpicWin games show "Session Expired" | Use v5 — adaptive orientation auto-rotates to landscape for landscape-only games |
+| Worker freezes past 49 vendors | v5 watchdog detects idle >5 min and force-exits only the frozen worker |
+| Process hangs after all tests done | v5 `afterAll` calls `process.exit(0)` — zombie-worker hang is fixed |
+| PG Soft (or other) all games REGION_RESTRICTED | Add vendor to `playwright/.auth/vendor-config.json` with `skipInBulkRun: true` |
+| Two vendors with same name (different case) produce duplicate CSV | v5 auto-deduplicates: CSV filename includes vendor ID suffix e.g. `betby_600012_...csv` |
 
 ---
 
@@ -577,9 +646,12 @@ Key differences you will notice:
 | 您的需求 | 命令 |
 |---|---|
 | **首次运行 / 会话过期** | `npx playwright test --project=setup` |
-| **运行所有供应商 (推荐使用 v4)** | `npx playwright test tests/v4/ --project=chromium --workers=6` |
-| **单个供应商 — 无头模式** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet"` |
-| **单个供应商 — 显示浏览器** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet" --workers=1 --headed` |
+| **运行所有供应商 (推荐使用 v5)** | `npx playwright test tests/v5/ --project=chromium --workers=6` |
+| **单个供应商 — v5 无头模式** | `npx playwright test tests/v5/ --project=chromium -g "v5: Amusnet"` |
+| **单个供应商 — v5 显示浏览器** | `npx playwright test tests/v5/ --project=chromium -g "v5: Amusnet" --workers=1 --headed` |
+| **运行所有供应商 (v4 稳定版)** | `npx playwright test tests/v4/ --project=chromium --workers=6` |
+| **单个供应商 — v4 无头模式** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet"` |
+| **单个供应商 — v4 显示浏览器** | `npx playwright test tests/v4/ --project=chromium -g "v4: Amusnet" --workers=1 --headed` |
 | **生成仪表板报告** | `npx ts-node tests/reports/generateReport.ts` |
 | **报告 — 仅限最新运行** | `npx ts-node tests/reports/generateReport.ts --latest` |
 | **比较最近的两次运行** | `npx ts-node tests/reports/diffRuns.ts --latest` |
@@ -702,7 +774,8 @@ test-results/
 |---|---|---|---|
 | v1 | `tests/s9_test.spec.ts` | 每个供应商一次 1 个游戏，DOM 滚动 | ~3.5小时 |
 | v2 | `tests/v2/s9_test_v2.spec.ts` | 基于信号量的并发队列，API | ~18 分钟 |
-| v4 ⭐ | `tests/v4/s9_test_v4.spec.ts` | 工作池，嵌套 iframe 检测，包含日期的运行文件夹 | ~25 分钟 @ 6 workers |
+| v4 | `tests/v4/s9_test_v4.spec.ts` | 工作池，嵌套 iframe 检测，包含日期的运行文件夹 | ~100 分钟 @ 6 workers |
+| v5 ⭐ | `tests/v5/s9_test_v5.spec.ts` | 自适应并发、页面池、移动端模拟、死信重试队列、冻结挂起守卫 | ~50–60 分钟 @ 6 workers |
 
 ---
 
@@ -728,8 +801,11 @@ d:/Yoong testing/
 │   │   ├── s9_test_v2.spec.ts         # v2 测试运行器 (信号量队列)
 │   │   └── apiValidationFlowV2.ts     # v2 验证逻辑
 │   ├── v4/
-│   │   ├── s9_test_v4.spec.ts         # v4 测试运行器 (工作池) ⭐
+│   │   ├── s9_test_v4.spec.ts         # v4 测试运行器 (工作池)
 │   │   └── apiValidationFlowV4.ts     # v4 验证逻辑
+│   ├── v5/
+│   │   ├── s9_test_v5.spec.ts         # v5 测试运行器 (自适应并发 + 页面池) ⭐
+│   │   └── apiValidationFlowV5.ts     # v5 验证逻辑
 │   ├── reports/
 │   │   ├── generateReport.ts          # 根据所有 CSV 运行数据构建 HTML 仪表板
 │   │   └── diffRuns.ts                # 比较两次运行，展示回归与恢复情况
@@ -769,7 +845,19 @@ npx playwright test --project=setup
 
 ## 运行测试
 
-### ⭐ 推荐：v4 — 所有供应商
+### ⭐ 推荐：v5 — 所有供应商
+
+```bash
+npx playwright test tests/v5/ --project=chromium --workers=6
+```
+
+- 全局共享 20 令牌并发池 — 最后剩余的大供应商自动扩展并消耗所有空闲令牌
+- 每个供应商使用页面池 — 上下文在游戏间循环复用，无需每次重新创建
+- iPhone 14 Pro Max 移动端模拟 — 默认竖屏，如游戏需要则自动旋转横屏
+- 死信重试队列 — 失败游戏在所有游戏结束后重试，零等待中断
+- 5 分钟冻结守卫 — 仅中止冻结的单个 worker，其他 worker 正常继续
+
+### v4 — 所有供应商 (稳定基准)
 
 ```bash
 npx playwright test tests/v4/ --project=chromium --workers=6
@@ -803,7 +891,8 @@ npx playwright test tests/v4/ --project=chromium -g "v4: PG Soft" --workers=1 --
 #### 4. CSV 文件 (在 Excel 内打开)
 `Gate` — 失败的关卡 (1-4)  
 `Retries` — 重试次数  
-`FrameDepth` — 嵌套 iframe 深度
+`FrameDepth` — 嵌套 iframe 深度  
+`Orientation` — 游戏实际运行的屏幕方向（`portrait` 竖屏 / `landscape` 横屏，仅 v5）
 
 ---
 
@@ -820,6 +909,10 @@ npx playwright test tests/v4/ --project=chromium -g "v4: PG Soft" --workers=1 --
 ### 常见的排错情况
 - **`AUTH_FAILURE`**: 重新跑 setup 更新 Token。
 - **所有游戏失败于 Gate 2**: 用户状态过期或 IP 问题。
-- **速率受限 (HTTP 429)**: 调低 `MAX_CONCURRENT_GAMES` 或增加队列延迟。
+- **速率受限 (HTTP 429)**: 调低 `GLOBAL_PAGE_BUDGET` 或增加队列延迟。
+- **CQ9 游戏显示 404 被封锁**: 使用 v5 — iPhone UA 绕过 DevTools 检测。
+- **EpicWin 游戏显示「会话已过期」**: 使用 v5 — 自适应方向会自动旋转为横屏。
+- **进程在所有测试结束后挂起**: v5 已修复 — `afterAll` 中调用 `process.exit(0)`。
+- **Worker 在 49 个供应商后冻结**: v5 冻结守卫：超过 5 分钟无活动则仅强制退出该 worker。
 
-更多配置可在 `apiValidationFlowV4.ts` 与 `generateReport.ts` 中根据注释修改。
+更多配置可在 `apiValidationFlowV5.ts` 与 `generateReport.ts` 中根据注释修改。
